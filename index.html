@@ -3,158 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Array.prototype.reduce() Tester</title>
+    <title>Implement Array.prototype.reduce()</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
-        .function-input {
-            font-family: 'Courier New', Courier, monospace;
+        .code-editor {
+            font-family: 'Fira Code', monospace;
             background-color: #1E293B; /* slate-800 */
             color: #E2E8F0; /* slate-200 */
             border-color: #475569; /* slate-600 */
+            tab-size: 4;
+            -moz-tab-size: 4;
+            -o-tab-size: 4;
+        }
+        .console-output {
+             font-family: 'Fira Code', monospace;
         }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-200 p-4 sm:p-6 md:p-8">
+<body class="bg-slate-900 text-slate-300">
 
-    <div class="max-w-4xl mx-auto">
-        <!-- Header -->
-        <header class="text-center mb-8">
-            <h1 class="text-3xl sm:text-4xl font-bold text-white">Array.prototype.reduce() Test Suite</h1>
-            <p class="text-slate-400 mt-2">A utility to test the behavior of JavaScript's `reduce` method.</p>
-        </header>
-
-        <!-- Main Content -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-            <!-- Custom Tester -->
-            <div class="bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-700">
-                <h2 class="text-2xl font-semibold mb-4 text-white">Custom Test Case</h2>
-                
-                <!-- Array Input -->
-                <div class="mb-4">
-                    <label for="inputArray" class="block text-sm font-medium text-slate-300 mb-1">Array (JSON format)</label>
-                    <input type="text" id="inputArray" class="w-full p-2 rounded-md bg-slate-700 border border-slate-600 text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder='[1, 2, 3, 4]'>
-                </div>
-
-                <!-- Reducer Function Input -->
-                <div class="mb-4">
-                    <label for="reducerFunction" class="block text-sm font-medium text-slate-300 mb-1">Reducer Function Body</label>
-                    <div class="flex items-center text-slate-400 text-sm mb-1">
-                        <span class="font-mono">function(accumulator, currentValue, currentIndex, array) {</span>
-                    </div>
-                    <textarea id="reducerFunction" rows="4" class="w-full p-2 rounded-md function-input focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="  return accumulator + currentValue;"></textarea>
-                     <div class="flex items-center text-slate-400 text-sm mt-1">
-                        <span class="font-mono">}</span>
-                    </div>
-                </div>
-
-                <!-- Initial Value Input -->
-                <div class="mb-4">
-                    <label for="initialValue" class="block text-sm font-medium text-slate-300 mb-1">Initial Value (optional, JSON format)</label>
-                    <input type="text" id="initialValue" class="w-full p-2 rounded-md bg-slate-700 border border-slate-600 text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0">
-                </div>
-
-                <!-- Run Button -->
-                <button id="runTest" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-indigo-500 transition-colors duration-200">
-                    Run Reduce
-                </button>
-
-                <!-- Result Display -->
-                <div class="mt-6">
-                    <h3 class="text-lg font-semibold text-white">Result:</h3>
-                    <pre id="resultOutput" class="bg-slate-900 p-4 rounded-md mt-2 text-slate-300 min-h-[50px] whitespace-pre-wrap break-all"></pre>
+    <div class="flex flex-col lg:flex-row h-screen">
+        <!-- Left Panel: Problem Description & Results -->
+        <div class="w-full lg:w-1/2 p-6 flex flex-col overflow-y-auto">
+            <div class="flex-grow">
+                <h1 class="text-2xl font-bold text-white mb-4">27. Implement Array.prototype.reduce()</h1>
+                <div class="prose prose-invert max-w-none text-slate-300">
+                    <p>The <code>reduce()</code> method executes a user-supplied "reducer" callback function on each element of the array, in order, passing in the return value from the calculation on the preceding element. The final result of running the reducer across all elements of the array is a single value.</p>
+                    <p>Your task is to implement your own version of <code>Array.prototype.reduce</code>. Your function will be attached to <code>Array.prototype</code> for testing.</p>
+                    <h3 class="text-white">Requirements:</h3>
+                    <ul>
+                        <li>Your function should be named <code>myReduce</code>.</li>
+                        <li>It must accept two arguments: a <code>callback</code> function and an optional <code>initialValue</code>.</li>
+                        <li>The <code>callback</code> function receives four arguments: <code>accumulator</code>, <code>currentValue</code>, <code>currentIndex</code>, and <code>array</code>.</li>
+                        <li>If <code>initialValue</code> is provided, the <code>accumulator</code> starts with that value, and the iteration starts from the first element (index 0).</li>
+                        <li>If <code>initialValue</code> is <strong>not</strong> provided:
+                            <ul>
+                                <li>The <code>accumulator</code> starts with the first element of the array.</li>
+                                <li>The iteration starts from the second element (index 1).</li>
+                                <li>If the array is empty and no <code>initialValue</code> is given, it must throw a <code>TypeError</code>.</li>
+                            </ul>
+                        </li>
+                         <li>It should not use the built-in <code>Array.prototype.reduce</code> method.</li>
+                    </ul>
                 </div>
             </div>
+            
+            <!-- Console / Results -->
+            <div class="mt-8 flex-shrink-0">
+                 <h2 class="text-xl font-semibold text-white mb-2">Test Results</h2>
+                 <div id="results-container" class="bg-slate-800 rounded-lg p-4 h-64 overflow-y-auto console-output">
+                    <p class="text-slate-500">Click "Run Tests" to see the results.</p>
+                 </div>
+            </div>
+        </div>
 
-            <!-- Predefined Tests -->
-            <div class="bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-700">
-                <h2 class="text-2xl font-semibold mb-4 text-white">Standard Test Cases</h2>
-                <div id="test-cases-container" class="space-y-3">
-                    <!-- Test cases will be dynamically inserted here -->
-                </div>
+        <!-- Right Panel: Code Editor -->
+        <div class="w-full lg:w-1/2 p-6 flex flex-col bg-slate-800/50 border-l border-slate-700">
+            <h2 class="text-xl font-semibold text-white mb-2">Your Implementation</h2>
+            <div class="flex-grow flex flex-col">
+                 <textarea id="code-editor" class="w-full h-full p-4 rounded-lg code-editor focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"></textarea>
+            </div>
+            <div class="mt-4 flex-shrink-0">
+                 <button id="run-tests-btn" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-indigo-500 transition-colors duration-200">
+                    Run Tests
+                </button>
             </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- Elements ---
-            const inputArrayEl = document.getElementById('inputArray');
-            const reducerFunctionEl = document.getElementById('reducerFunction');
-            const initialValueEl = document.getElementById('initialValue');
-            const runTestBtn = document.getElementById('runTest');
-            const resultOutputEl = document.getElementById('resultOutput');
-            const testCasesContainer = document.getElementById('test-cases-container');
+            const codeEditor = document.getElementById('code-editor');
+            const runTestsBtn = document.getElementById('run-tests-btn');
+            const resultsContainer = document.getElementById('results-container');
 
-            // --- Default values for custom tester ---
-            inputArrayEl.value = '[1, 2, 3, 4]';
-            reducerFunctionEl.value = '  return accumulator + currentValue;';
-            initialValueEl.value = '0';
+            const initialCode = `/**
+ * @param {Function} callback
+ * @param {any} [initialValue]
+ * @return {any}
+ */
+Array.prototype.myReduce = function(callback, initialValue) {
+    // 'this' refers to the array
+    const arr = this;
+    const hasInitialValue = initialValue !== undefined;
 
-            // --- Custom Test Runner ---
-            const runCustomTest = () => {
-                let array, initialValue;
-                
-                // 1. Parse Input Array
-                try {
-                    array = JSON.parse(inputArrayEl.value);
-                    if (!Array.isArray(array)) {
-                        throw new Error("Input is not a valid array.");
-                    }
-                } catch (e) {
-                    resultOutputEl.textContent = `Error: Invalid Array input. Please provide a valid JSON array.\n${e.message}`;
-                    resultOutputEl.classList.add('text-red-400');
-                    return;
-                }
+    if (arr.length === 0 && !hasInitialValue) {
+        throw new TypeError('Reduce of empty array with no initial value');
+    }
 
-                // 2. Parse Initial Value
-                const initialValueStr = initialValueEl.value.trim();
-                let hasInitialValue = initialValueStr !== '';
-                if (hasInitialValue) {
-                    try {
-                        initialValue = JSON.parse(initialValueStr);
-                    } catch (e) {
-                        resultOutputEl.textContent = `Error: Invalid Initial Value. Please provide a valid JSON value or leave it empty.\n${e.message}`;
-                        resultOutputEl.classList.add('text-red-400');
-                        return;
-                    }
-                }
+    let accumulator = hasInitialValue ? initialValue : arr[0];
+    let startIndex = hasInitialValue ? 0 : 1;
 
-                // 3. Create Reducer Function
-                let reducer;
-                try {
-                    const reducerBody = reducerFunctionEl.value;
-                    reducer = new Function('accumulator', 'currentValue', 'currentIndex', 'array', reducerBody);
-                } catch (e) {
-                    resultOutputEl.textContent = `Error: Invalid reducer function syntax.\n${e.message}`;
-                    resultOutputEl.classList.add('text-red-400');
-                    return;
-                }
+    for (let i = startIndex; i < arr.length; i++) {
+        accumulator = callback(accumulator, arr[i], i, arr);
+    }
 
-                // 4. Execute reduce and display result
-                try {
-                    const result = hasInitialValue 
-                        ? array.reduce(reducer, initialValue) 
-                        : array.reduce(reducer);
-                    
-                    resultOutputEl.textContent = JSON.stringify(result, null, 2);
-                    resultOutputEl.classList.remove('text-red-400');
-                } catch (e) {
-                    resultOutputEl.textContent = `Error during reduce execution:\n${e.message}`;
-                    resultOutputEl.classList.add('text-red-400');
-                }
-            };
+    return accumulator;
+};`;
 
-            runTestBtn.addEventListener('click', runCustomTest);
+            codeEditor.value = initialCode;
 
-            // --- Predefined Test Cases ---
             const testCases = [
                 {
-                    description: 'Summing all values in an array',
+                    description: 'Summing all values with an initial value',
                     array: [1, 2, 3, 4],
                     reducer: (acc, val) => acc + val,
                     initialValue: 0,
@@ -174,20 +129,9 @@
                     expected: [0, 1, 2, 3, 4, 5]
                 },
                 {
-                    description: 'Counting instances of values',
-                    array: ['a', 'b', 'a', 'c', 'b', 'a'],
-                    reducer: (acc, val) => {
-                        acc[val] = (acc[val] || 0) + 1;
-                        return acc;
-                    },
-                    initialValue: {},
-                    expected: { a: 3, b: 2, c: 1 }
-                },
-                {
                     description: 'Finding the maximum value',
                     array: [5, 1, 8, 3, 9, 4],
                     reducer: (acc, val) => Math.max(acc, val),
-                    // No initial value, so first element becomes initial accumulator
                     expected: 9
                 },
                 {
@@ -197,29 +141,54 @@
                     shouldThrow: true,
                     expectedError: 'TypeError'
                 },
-                 {
+                {
                     description: 'Works with an empty array if initial value is provided',
                     array: [],
                     reducer: (acc, val) => acc + val,
                     initialValue: 100,
                     expected: 100
+                },
+                {
+                    description: 'Correctly uses index and array arguments',
+                    array: [10, 20],
+                    reducer: (acc, val, index, arr) => acc + val + arr[index],
+                    initialValue: 0,
+                    expected: 60 // (0 + 10 + 10) + (20 + 20)
                 }
             ];
+            
+            runTestsBtn.addEventListener('click', () => {
+                resultsContainer.innerHTML = ''; // Clear previous results
+                const userCode = codeEditor.value;
 
-            const runPredefinedTests = () => {
-                testCases.forEach(test => {
+                try {
+                    // Evaluate user's code to attach their myReduce to Array.prototype
+                    // Using a new Function to avoid polluting the global scope directly
+                    new Function(userCode)();
+                    
+                    if (typeof Array.prototype.myReduce !== 'function') {
+                         throw new Error("`Array.prototype.myReduce` is not defined or is not a function.");
+                    }
+
+                } catch (e) {
+                    renderError(`Syntax Error in Implementation: ${e.message}`);
+                    return;
+                }
+
+                let allPassed = true;
+                testCases.forEach((test, index) => {
                     let result, error;
                     let passed = false;
 
                     try {
+                        // Use the user's implementation
                         result = test.hasOwnProperty('initialValue')
-                            ? test.array.reduce(test.reducer, test.initialValue)
-                            : test.array.reduce(test.reducer);
+                            ? test.array.myReduce(test.reducer, test.initialValue)
+                            : test.array.myReduce(test.reducer);
                         
                         if (test.shouldThrow) {
                            passed = false; // Should have thrown but didn't
                         } else {
-                           // Deep comparison for objects/arrays
                            passed = JSON.stringify(result) === JSON.stringify(test.expected);
                         }
 
@@ -231,49 +200,52 @@
                             passed = false;
                         }
                     }
-
-                    renderTestCaseResult(test, passed, result, error);
+                    
+                    if (!passed) allPassed = false;
+                    renderTestCaseResult(test, passed, result, error, index + 1);
                 });
+
+                if(allPassed) {
+                    const successMessage = document.createElement('div');
+                    successMessage.className = 'text-green-400 font-bold text-lg mt-4';
+                    successMessage.textContent = 'Congratulations! All tests passed!';
+                    resultsContainer.prepend(successMessage);
+                }
+
+                // Clean up the prototype after tests
+                delete Array.prototype.myReduce;
+            });
+
+            const renderError = (message) => {
+                 resultsContainer.innerHTML = `<div class="p-2 rounded-md bg-red-900/40 text-red-300">
+                    <p class="font-bold">Error:</p>
+                    <p>${message}</p>
+                 </div>`;
             };
 
-            const renderTestCaseResult = (test, passed, result, error) => {
-                const testCaseEl = document.createElement('div');
-                testCaseEl.className = `p-3 rounded-lg flex items-center justify-between border ${passed ? 'bg-green-900/50 border-green-700' : 'bg-red-900/50 border-red-700'}`;
-
-                const statusIcon = passed 
-                    ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400 mr-3 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>`
-                    : `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400 mr-3 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>`;
+            const renderTestCaseResult = (test, passed, result, error, caseNum) => {
+                const resultEl = document.createElement('div');
+                resultEl.className = `p-2 rounded-md mb-2 ${passed ? 'bg-green-900/40' : 'bg-red-900/40'}`;
                 
-                const statusText = passed ? 'Pass' : 'Fail';
-                const statusColor = passed ? 'text-green-400' : 'text-red-400';
-
                 let details = '';
                 if (!passed) {
                     if (test.shouldThrow && !error) {
-                        details = `Expected to throw ${test.expectedError}, but returned ${JSON.stringify(result)}`;
+                        details = `Expected to throw ${test.expectedError}, but returned: <pre class="inline">${JSON.stringify(result)}</pre>`;
                     } else if (error) {
-                        details = `Threw unexpected error: ${error.name}`;
+                        details = `Threw unexpected error: ${error.name}: ${error.message}`;
                     } else {
-                        details = `Expected: ${JSON.stringify(test.expected)}, Got: ${JSON.stringify(result)}`;
+                        details = `Expected: <pre class="inline">${JSON.stringify(test.expected)}</pre><br>Received: <pre class="inline">${JSON.stringify(result)}</pre>`;
                     }
                 }
 
-                testCaseEl.innerHTML = `
-                    <div class="flex items-center">
-                        ${statusIcon}
-                        <div>
-                            <p class="font-medium text-slate-200">${test.description}</p>
-                            ${!passed ? `<p class="text-xs text-slate-400">${details}</p>` : ''}
-                        </div>
+                resultEl.innerHTML = `
+                    <div class="font-bold ${passed ? 'text-green-400' : 'text-red-300'}">
+                        Case ${caseNum}: ${test.description} - ${passed ? 'Passed' : 'Failed'}
                     </div>
-                    <span class="font-semibold text-sm ${statusColor}">${statusText}</span>
+                    ${!passed ? `<div class="mt-1 text-xs text-slate-300">${details}</div>` : ''}
                 `;
-                testCasesContainer.appendChild(testCaseEl);
+                resultsContainer.appendChild(resultEl);
             };
-
-            // Initial runs
-            runPredefinedTests();
-            runCustomTest();
         });
     </script>
 
