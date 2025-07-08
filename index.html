@@ -87,22 +87,8 @@
  * @return {any}
  */
 Array.prototype.myReduce = function(callback, initialValue) {
-    // 'this' refers to the array
-    const arr = this;
-    const hasInitialValue = initialValue !== undefined;
+    // Write your implementation here
 
-    if (arr.length === 0 && !hasInitialValue) {
-        throw new TypeError('Reduce of empty array with no initial value');
-    }
-
-    let accumulator = hasInitialValue ? initialValue : arr[0];
-    let startIndex = hasInitialValue ? 0 : 1;
-
-    for (let i = startIndex; i < arr.length; i++) {
-        accumulator = callback(accumulator, arr[i], i, arr);
-    }
-
-    return accumulator;
 };`;
 
             codeEditor.value = initialCode;
