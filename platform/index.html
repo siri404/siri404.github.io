@@ -31,7 +31,21 @@
 </head>
 <body class="p-4 sm:p-8">
     <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 sm:p-8">
-        <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-6 text-center">BigFrontend.dev Questions</h1>
+        <div class="flex justify-between items-center mb-4">
+            <div class="text-sm text-gray-500">
+                Your User ID: <span id="user-id" class="font-mono text-gray-700">Loading...</span>
+            </div>
+            <button id="view-progress-btn" class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white font-medium rounded-md transition-colors duration-200 shadow-md text-sm">
+                View Progress
+            </button>
+        </div>
+
+        <div id="progress-summary" class="bg-blue-50 p-4 rounded-lg shadow-sm mb-6 text-center">
+            <h2 class="text-xl font-semibold text-blue-800 mb-2">Your Progress</h2>
+            <p class="text-blue-700">Total Questions: <span id="total-questions">0</span></p>
+            <p class="text-blue-700">Attempted: <span id="attempted-questions">0</span></p>
+            <p class="text-blue-700">Remaining: <span id="remaining-questions">0</span></p>
+        </div>
 
         <div id="filter-controls" class="mb-6 flex flex-wrap items-center gap-2">
             <!-- Tags and filter controls will be rendered here -->
@@ -50,8 +64,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/edit/matchbrackets.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/selection/active-line.min.js"></script>
 
-    <script>
-        // JSON data for the questions
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection, query, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase instances
+        let app;
+        let db;
+        let auth;
+        let userId;
+        let userProgress = {}; // Cache for user's progress
+
+        // This data would typically be in a separate 'js/questionsData.js' file
         const questionsData = [
             {
                 "id": 1,
@@ -78,10 +103,10 @@
 const add = (a, b, c) => a + b + c;
 const curriedAdd = curry(add);
 
-console.log(curriedAdd(1)(2)(3)); // Should output 6
-console.log(curriedAdd(1, 2)(3)); // Should output 6
-console.log(curriedAdd(1)(2, 3)); // Should output 6
-console.log(curriedAdd(1, 2, 3)); // Should output 6
+console.log(curriedAdd(1)(2)(3));
+console.log(curriedAdd(1, 2)(3));
+console.log(curriedAdd(1)(2, 3));
+console.log(curriedAdd(1, 2, 3));
 `,
                 "tags": ["Function", "Currying", "JavaScript"]
             },
@@ -108,10 +133,10 @@ console.log(curriedAdd(1, 2, 3)); // Should output 6
 
 // Example usage:
 const arr1 = [1, [2, 3], 4];
-console.log(arr1.flat()); // Should output [1, 2, 3, 4]
+console.log(arr1.flat());
 
 const arr2 = [1, [2, [3, 4]], 5];
-console.log(arr2.flat(2)); // Should output [1, 2, 3, 4, 5]
+console.log(arr2.flat(2));
 `,
                 "tags": ["Array", "JavaScript"]
             },
@@ -141,11 +166,10 @@ const increment = () => {
 const throttledIncrement = throttle(increment, 500);
 
 // Simulate rapid calls
-throttledIncrement(); // Called immediately
+throttledIncrement();
 setTimeout(throttledIncrement, 100);
-setTimeout(throledIncrement, 200);
-setTimeout(throttledIncrement, 600); // Called after 500ms
-setTimeout(throttledIncrement, 700);
+setTimeout(throttledIncrement, 200);
+setTimeout(throttledIncrement, 600);
 `,
                 "tags": ["Function", "Debounce/Throttle", "JavaScript", "Async"]
             },
@@ -179,7 +203,7 @@ debouncedIncrement();
 debouncedIncrement();
 setTimeout(debouncedIncrement, 100);
 setTimeout(debouncedIncrement, 200);
-setTimeout(debouncedIncrement, 400); // This should be the only one that executes
+setTimeout(debouncedIncrement, 400);
 `,
                 "tags": ["Function", "Debounce/Throttle", "JavaScript", "Async"]
             },
@@ -272,7 +296,7 @@ const p3 = new Promise((resolve, reject) => {
 });
 
 Promise.myAll([p1, p2, p3]).then(values => {
-  console.log(values); // Expected: [3, 42, "foo"]
+  console.log(values);
 });
 
 const p4 = new Promise((resolve, reject) => {
@@ -280,7 +304,7 @@ const p4 = new Promise((resolve, reject) => {
 });
 
 Promise.myAll([p1, p4]).catch(error => {
-  console.error(error); // Expected: "bar"
+  console.error(error);
 });
 `,
                 "tags": ["Promise", "Async", "JavaScript"]
@@ -312,11 +336,11 @@ const obj2 = { b: 2 };
 const obj3 = { c: 3 };
 
 const result1 = Object.myAssign(obj1, obj2, obj3);
-console.log(result1); // Expected: { a: 1, b: 2, c: 3 }
-console.log(obj1); // Expected: { a: 1, b: 2, c: 3 } (target is modified)
+console.log(result1);
+console.log(obj1);
 
 const result2 = Object.myAssign({}, { a: 1 }, { a: 2, b: 3 });
-console.log(result2); // Expected: { a: 2, b: 3 }
+console.log(result2);
 `,
                 "tags": ["Object", "JavaScript"]
             },
@@ -345,11 +369,11 @@ const increment = () => {
 
 const incrementOnce = once(increment);
 
-incrementOnce(); // First call, function executes
-incrementOnce(); // Second call, function does not execute
-incrementOnce(); // Third call, function does not execute
+incrementOnce();
+incrementOnce();
+incrementOnce();
 
-console.log('Final count:', count); // Expected: Final count: 1
+console.log('Final count:', count);
 `,
                 "tags": ["Function", "Lodash", "JavaScript"]
             },
@@ -393,7 +417,7 @@ clonedObj1.b.d[1].e = 100;
 clonedObj1.h.setFullYear(2000);
 
 console.log('Modified clonedObj1:', clonedObj1);
-console.log('Original obj1 after modification:', obj1); // Should remain unchanged
+console.log('Original obj1 after modification:', obj1);
 `,
                 "tags": ["Object", "Lodash", "JavaScript"]
             },
@@ -419,12 +443,12 @@ console.log('Original obj1 after modification:', obj1); // Should remain unchang
 }
 
 // Example usage:
-console.log(isEqual({a: 1, b: {c: 2}}, {a: 1, b: {c: 2}})); // Expected: true
-console.log(isEqual({a: 1, b: {c: 2}}, {a: 1, b: {c: 3}})); // Expected: false
-console.log(isEqual([1, {a: 1}], [1, {a: 1}])); // Expected: true
-console.log(isEqual(1, 1)); // Expected: true
-console.log(isEqual(null, null)); // Expected: true
-console.log(isEqual(NaN, NaN)); // Expected: true
+console.log(isEqual({a: 1, b: {c: 2}}, {a: 1, b: {c: 2}}));
+console.log(isEqual({a: 1, b: {c: 2}}, {a: 1, b: {c: 3}}));
+console.log(isEqual([1, {a: 1}], [1, {a: 1}]));
+console.log(isEqual(1, 1));
+console.log(isEqual(null, null));
+console.log(isEqual(NaN, NaN));
 `,
                 "tags": ["Object", "Lodash", "JavaScript"]
             },
@@ -479,11 +503,11 @@ const handler2 = () => {
 emitter.on('increment', handler1);
 emitter.on('log', handler2);
 
-emitter.emit('increment', 5); // count: 5
-emitter.emit('log'); // Handler 2 called
+emitter.emit('increment', 5);
+emitter.emit('log');
 
 emitter.off('increment', handler1);
-emitter.emit('increment', 10); // count: 5 (handler1 no longer active)
+emitter.emit('increment', 10);
 `,
                 "tags": ["Event", "Design Pattern", "JavaScript"]
             },
@@ -512,13 +536,13 @@ emitter.emit('increment', 10); // count: 5 (handler1 no longer active)
 const numbers = [1, 2, 3, 4, 5];
 
 const sum = numbers.myReduce((acc, num) => acc + num, 0);
-console.log('Sum:', sum); // Expected: 15
+console.log('Sum:', sum);
 
 const product = numbers.myReduce((acc, num) => acc * num);
-console.log('Product:', product); // Expected: 120 (1 * 2 * 3 * 4 * 5)
+console.log('Product:', product);
 
 const flatten = [[1, 2], [3, 4]].myReduce((acc, val) => acc.concat(val), []);
-console.log('Flattened array:', flatten); // Expected: [1, 2, 3, 4]
+console.log('Flattened array:', flatten);
 `,
                 "tags": ["Array", "JavaScript"]
             },
@@ -552,15 +576,15 @@ const person = {
 };
 
 const me = Object.myCreate(person);
-me.name = 'Matthew'; // "name" is a property set on "me", but not on "person"
-me.printIntroduction(); // Expected: "My name is Matthew. Am I human? true"
+me.name = 'Matthew';
+me.printIntroduction();
 
 const anotherPerson = Object.myCreate(person, {
   name: { value: 'Alice', writable: true, configurable: true, enumerable: true },
   age: { value: 30, writable: true, configurable: true, enumerable: true }
 });
-console.log(anotherPerson.name); // Expected: Alice
-console.log(anotherPerson.age); // Expected: 30
+console.log(anotherPerson.name);
+console.log(anotherPerson.age);
 `,
                 "tags": ["Object", "OOP", "JavaScript"]
             },
@@ -591,17 +615,17 @@ function greet(greeting) {
 }
 
 const person1 = { name: 'Alice' };
-greet.myCall(person1, 'Hi'); // Expected: Hi, Alice!
+greet.myCall(person1, 'Hi');
 
 const person2 = { name: 'Bob' };
-greet.myCall(person2, 'Hello'); // Expected: Hello, Bob!
+greet.myCall(person2, 'Hello');
 
 function add(a, b) {
   return this.base + a + b;
 }
 
 const calculator = { base: 10 };
-console.log(add.myCall(calculator, 5, 2)); // Expected: 17
+console.log(add.myCall(calculator, 5, 2));
 `,
                 "tags": ["Function", "This", "JavaScript"]
             },
@@ -634,15 +658,15 @@ Honda.prototype = Object.create(Car.prototype);
 const myCar = new Car();
 const myHonda = new Honda();
 
-console.log(myInstanceOf(myCar, Car));    // Expected: true
-console.log(myInstanceOf(myHonda, Honda));  // Expected: true
-console.log(myInstanceOf(myHonda, Car));   // Expected: true
-console.log(myInstanceOf(myCar, Object));  // Expected: true
-console.log(myInstanceOf(myHonda, Object)); // Expected: true
-console.log(myInstanceOf([], Array));     // Expected: true
-console.log(myInstanceOf({}, Object));     // Expected: true
-console.log(myInstanceOf(null, Object));   // Expected: false
-console.log(myInstanceOf(undefined, Object)); // Expected: false
+console.log(myInstanceOf(myCar, Car));
+console.log(myInstanceOf(myHonda, Honda));
+console.log(myInstanceOf(myHonda, Car));
+console.log(myInstanceOf(myCar, Object));
+console.log(myInstanceOf(myHonda, Object));
+console.log(myInstanceOf([], Array));
+console.log(myInstanceOf({}, Object));
+console.log(myInstanceOf(null, Object));
+console.log(myInstanceOf(undefined, Object));
 `,
                 "tags": ["Object", "OOP", "JavaScript"]
             },
@@ -673,15 +697,15 @@ console.log(myInstanceOf(undefined, Object)); // Expected: false
 };
 
 // Example usage:
-console.log(Object.myIs(1, 1));     // Expected: true
-console.log(Object.myIs('foo', 'foo')); // Expected: true
-console.log(Object.myIs([], []));    // Expected: false (reference equality)
-console.log(Object.myIs(null, null)); // Expected: true
-console.log(Object.myIs(undefined, undefined)); // Expected: true
-console.log(Object.myIs(NaN, NaN));   // Expected: true
-console.log(Object.myIs(-0, +0));    // Expected: false
-console.log(Object.myIs(0, -0));     // Expected: false
-console.log(Object.myIs(1, '1'));    // Expected: false
+console.log(Object.myIs(1, 1));
+console.log(Object.myIs('foo', 'foo'));
+console.log(Object.myIs([], []));
+console.log(Object.myIs(null, null));
+console.log(Object.myIs(undefined, undefined));
+console.log(Object.myIs(NaN, NaN));
+console.log(Object.myIs(-0, +0));
+console.log(Object.myIs(0, -0));
+console.log(Object.myIs(1, '1'));
 `,
                 "tags": ["Object", "JavaScript"]
             },
@@ -755,12 +779,12 @@ doSomething()
 }
 
 // Example usage:
-console.log(classNames('foo', 'bar')); // Expected: "foo bar"
-console.log(classNames('foo', false, 'bar', null, undefined, 0, '')); // Expected: "foo bar"
-console.log(classNames({ foo: true, bar: false, baz: true })); // Expected: "foo baz"
-console.log(classNames('foo', { bar: true, baz: false }, 'qux', { corge: true })); // Expected: "foo bar qux corge"
-console.log(classNames(['foo', 'bar'], { baz: true })); // Expected: "foo bar baz"
-console.log(classNames()); // Expected: ""
+console.log(classNames('foo', 'bar'));
+console.log(classNames('foo', false, 'bar', null, undefined, 0, ''));
+console.log(classNames({ foo: true, bar: false, baz: true }));
+console.log(classNames('foo', { bar: true, baz: false }, 'qux', { corge: true }));
+console.log(classNames(['foo', 'bar'], { baz: true }));
+console.log(classNames());
 `,
                 "tags": ["Utility", "String", "JavaScript"]
             },
@@ -786,12 +810,12 @@ console.log(classNames()); // Expected: ""
 }
 
 // Example usage:
-console.log(chunk(['a', 'b', 'c', 'd'], 2)); // Expected: [['a', 'b'], ['c', 'd']]
-console.log(chunk(['a', 'b', 'c', 'd', 'e'], 2)); // Expected: [['a', 'b'], ['c', 'd'], ['e']]
-console.log(chunk(['a', 'b', 'c', 'd'], 3)); // Expected: [['a', 'b', 'c'], ['d']]
-console.log(chunk(['a', 'b', 'c'], 1)); // Expected: [['a'], ['b'], ['c']]
-console.log(chunk([], 3)); // Expected: []
-console.log(chunk(['a', 'b'], 0)); // Expected: [] (or handle error, depends on spec)
+console.log(chunk(['a', 'b', 'c', 'd'], 2));
+console.log(chunk(['a', 'b', 'c', 'd', 'e'], 2));
+console.log(chunk(['a', 'b', 'c', 'd'], 3));
+console.log(chunk(['a', 'b', 'c'], 1));
+console.log(chunk([], 3));
+console.log(chunk(['a', 'b'], 0));
 `,
                 "tags": ["Array", "Lodash", "JavaScript"]
             },
@@ -817,10 +841,10 @@ console.log(chunk(['a', 'b'], 0)); // Expected: [] (or handle error, depends on 
 }
 
 // Example usage:
-console.log(binarySearch([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 7)); // Expected: 6
-console.log(binarySearch([1, 3, 5, 7, 9], 5)); // Expected: 2
-console.log(binarySearch([1, 3, 5, 7, 9], 2)); // Expected: -1
-console.log(binarySearch([], 5)); // Expected: -1
+console.log(binarySearch([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 7));
+console.log(binarySearch([1, 3, 5, 7, 9], 5));
+console.log(binarySearch([1, 3, 5, 7, 9], 2));
+console.log(binarySearch([], 5));
 `,
                 "tags": ["Algorithm", "Search", "Array"]
             },
@@ -871,13 +895,13 @@ console.log(binarySearch([], 5)); // Expected: -1
 const queue = new Queue();
 queue.enqueue(10);
 queue.enqueue(20);
-console.log(queue.dequeue()); // Expected: 10
-console.log(queue.peek());    // Expected: 20
-console.log(queue.isEmpty()); // Expected: false
-console.log(queue.size());    // Expected: 1
-console.log(queue.dequeue()); // Expected: 20
-console.log(queue.dequeue()); // Expected: undefined
-console.log(queue.isEmpty()); // Expected: true
+console.log(queue.dequeue());
+console.log(queue.peek());
+console.log(queue.isEmpty());
+console.log(queue.size());
+console.log(queue.dequeue());
+console.log(queue.dequeue());
+console.log(queue.isEmpty());
 `,
                 "tags": ["Data Structure", "Queue", "OOP"]
             },
@@ -928,13 +952,13 @@ console.log(queue.isEmpty()); // Expected: true
 const stack = new Stack();
 stack.push(10);
 stack.push(20);
-console.log(stack.pop());   // Expected: 20
-console.log(stack.peek());  // Expected: 10
-console.log(stack.isEmpty()); // Expected: false
-console.log(stack.size());  // Expected: 1
-console.log(stack.pop());   // Expected: 10
-console.log(stack.pop());   // Expected: undefined
-console.log(stack.isEmpty()); // Expected: true
+console.log(stack.pop());
+console.log(stack.peek());
+console.log(stack.isEmpty());
+console.log(stack.size());
+console.log(stack.pop());
+console.log(stack.pop());
+console.log(stack.isEmpty());
 `,
                 "tags": ["Data Structure", "Stack", "OOP"]
             },
@@ -956,7 +980,7 @@ console.log(stack.isEmpty()); // Expected: true
 
 // Example usage:
 const originalArray = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-const shuffledArray = shuffle([...originalArray]); // Use spread to avoid modifying original
+const shuffledArray = shuffle([...originalArray]);
 console.log('Original:', originalArray);
 console.log('Shuffled:', shuffledArray);
 
@@ -987,10 +1011,10 @@ console.log('Another shuffle:', shuffle([...originalArray]));
 }
 
 // Example usage:
-console.log(bubbleSort([5, 1, 4, 2, 8])); // Expected: [1, 2, 4, 5, 8]
-console.log(bubbleSort([3, 2, 1]));      // Expected: [1, 2, 3]
-console.log(bubbleSort([]));             // Expected: []
-console.log(bubbleSort([7]));            // Expected: [7]
+console.log(bubbleSort([5, 1, 4, 2, 8]));
+console.log(bubbleSort([3, 2, 1]));
+console.log(bubbleSort([]));
+console.log(bubbleSort([7]));
 `,
                 "tags": ["Algorithm", "Sorting", "Array"]
             },
@@ -1030,10 +1054,10 @@ function merge(left, right) {
 }
 
 // Example usage:
-console.log(mergeSort([38, 27, 43, 3, 9, 82, 10])); // Expected: [3, 9, 10, 27, 38, 43, 82]
-console.log(mergeSort([5, 4, 3, 2, 1])); // Expected: [1, 2, 3, 4, 5]
-console.log(mergeSort([])); // Expected: []
-console.log(mergeSort([7])); // Expected: [7]
+console.log(mergeSort([38, 27, 43, 3, 9, 82, 10]));
+console.log(mergeSort([5, 4, 3, 2, 1]));
+console.log(mergeSort([]));
+console.log(mergeSort([7]));
 `,
                 "tags": ["Algorithm", "Sorting", "Array"]
             },
@@ -1054,10 +1078,10 @@ console.log(mergeSort([7])); // Expected: [7]
 }
 
 // Example usage:
-console.log(insertionSort([12, 11, 13, 5, 6])); // Expected: [5, 6, 11, 12, 13]
-console.log(insertionSort([5, 4, 3, 2, 1])); // Expected: [1, 2, 3, 4, 5]
-console.log(insertionSort([])); // Expected: []
-console.log(insertionSort([7])); // Expected: [7]
+console.log(insertionSort([12, 11, 13, 5, 6]));
+console.log(insertionSort([5, 4, 3, 2, 1]));
+console.log(insertionSort([]));
+console.log(insertionSort([7]));
 `,
                 "tags": ["Algorithm", "Sorting", "Array"]
             },
@@ -1085,29 +1109,29 @@ function partition(arr, low, high) {
   for (let j = low; j <= high - 1; j++) {
     if (arr[j] < pivot) {
       i++;
-      [arr[i], arr[j]] = [arr[j], arr[i]]; // Swap
+      [arr[i], arr[j]] = [arr[j], arr[i]];
     }
   }
-  [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]]; // Swap pivot
+  [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
   return i + 1;
 }
 
 // Example usage:
 const arr1 = [10, 7, 8, 9, 1, 5];
 quickSort(arr1);
-console.log(arr1); // Expected: [1, 5, 7, 8, 9, 10]
+console.log(arr1);
 
 const arr2 = [5, 4, 3, 2, 1];
 quickSort(arr2);
-console.log(arr2); // Expected: [1, 2, 3, 4, 5]
+console.log(arr2);
 
 const arr3 = [];
 quickSort(arr3);
-console.log(arr3); // Expected: []
+console.log(arr3);
 
 const arr4 = [7];
 quickSort(arr4);
-console.log(arr4); // Expected: [7]
+console.log(arr4);
 `,
                 "tags": ["Algorithm", "Sorting", "Array"]
             },
@@ -1128,10 +1152,10 @@ console.log(arr4); // Expected: [7]
 }
 
 // Example usage:
-console.log(selectionSort([64, 25, 12, 22, 11])); // Expected: [11, 12, 22, 25, 64]
-console.log(selectionSort([5, 4, 3, 2, 1])); // Expected: [1, 2, 3, 4, 5]
-console.log(selectionSort([])); // Expected: []
-console.log(selectionSort([7])); // Expected: [7]
+console.log(selectionSort([64, 25, 12, 22, 11]));
+console.log(selectionSort([5, 4, 3, 2, 1]));
+console.log(selectionSort([]));
+console.log(selectionSort([7]));
 `,
                 "tags": ["Algorithm", "Sorting", "Array"]
             },
@@ -1157,9 +1181,9 @@ console.log(selectionSort([7])); // Expected: [7]
 }
 
 // Example usage:
-console.log(findKthLargest([3, 2, 1, 5, 6, 4], 2)); // Expected: 5
-console.log(findKthLargest([3, 2, 3, 1, 2, 4, 5, 5, 6], 4)); // Expected: 4
-console.log(findKthLargest([1], 1)); // Expected: 1
+console.log(findKthLargest([3, 2, 1, 5, 6, 4], 2));
+console.log(findKthLargest([3, 2, 3, 1, 2, 4, 5, 5, 6], 4));
+console.log(findKthLargest([1], 1));
 `,
                 "tags": ["Algorithm", "Array", "Sorting"]
             },
@@ -1212,17 +1236,17 @@ function listToArray(head) {
 const list1 = createList([1, 2, 3, 4, 5]);
 console.log('Original list:', listToArray(list1));
 const reversedList1 = reverseList(list1);
-console.log('Reversed list:', listToArray(reversedList1)); // Expected: [5, 4, 3, 2, 1]
+console.log('Reversed list:', listToArray(reversedList1));
 
 const list2 = createList([1]);
 console.log('Original list:', listToArray(list2));
 const reversedList2 = reverseList(list2);
-console.log('Reversed list:', listToArray(reversedList2)); // Expected: [1]
+console.log('Reversed list:', listToArray(reversedList2));
 
 const list3 = createList([]);
 console.log('Original list:', listToArray(list3));
 const reversedList3 = reverseList(list3);
-console.log('Reversed list:', listToArray(reversedList3)); // Expected: []
+console.log('Reversed list:', listToArray(reversed3));
 `,
                 "tags": ["Data Structure", "Linked List", "Algorithm"]
             },
@@ -1248,11 +1272,11 @@ console.log('Reversed list:', listToArray(reversedList3)); // Expected: []
 }
 
 // Example usage:
-console.log(addStrings('123', '456')); // Expected: "579"
-console.log(addStrings('99', '1'));    // Expected: "100"
-console.log(addStrings('1', '999'));   // Expected: "1000"
-console.log(addStrings('0', '0'));     // Expected: "0"
-console.log(addStrings('1234567890123456789', '9876543210987654321')); // Expected: "11111111101111111110"
+console.log(addStrings('123', '456'));
+console.log(addStrings('99', '1'));
+console.log(addStrings('1', '999'));
+console.log(addStrings('0', '0'));
+console.log(addStrings('1234567890123456789', '9876543210987654321'));
 `,
                 "tags": ["String", "Algorithm", "Math"]
             },
@@ -1281,18 +1305,18 @@ console.log(addStrings('1234567890123456789', '9876543210987654321')); // Expect
 // Example usage:
 let arr1 = [1, 1, 2];
 let len1 = removeDuplicates(arr1);
-console.log('New length:', len1); // Expected: 2
-console.log('Modified array (first ' + len1 + ' elements):', arr1.slice(0, len1)); // Expected: [1, 2]
+console.log('New length:', len1);
+console.log('Modified array (first ' + len1 + ' elements):', arr1.slice(0, len1));
 
 let arr2 = [0, 0, 1, 1, 1, 2, 2, 3, 3, 4];
 let len2 = removeDuplicates(arr2);
-console.log('New length:', len2); // Expected: 5
-console.log('Modified array (first ' + len2 + ' elements):', arr2.slice(0, len2)); // Expected: [0, 1, 2, 3, 4]
+console.log('New length:', len2);
+console.log('Modified array (first ' + len2 + ' elements):', arr2.slice(0, len2));
 
 let arr3 = [];
 let len3 = removeDuplicates(arr3);
-console.log('New length:', len3); // Expected: 0
-console.log('Modified array (first ' + len3 + ' elements):', arr3.slice(0, len3)); // Expected: []
+console.log('New length:', len3);
+console.log('Modified array (first ' + len3 + ' elements):', arr3.slice(0, len3));
 `,
                 "tags": ["Array", "Algorithm"]
             },
@@ -1318,12 +1342,12 @@ console.log('Modified array (first ' + len3 + ' elements):', arr3.slice(0, len3)
 }
 
 // Example usage:
-console.log(fib(0)); // Expected: 0
-console.log(fib(1)); // Expected: 1
-console.log(fib(2)); // Expected: 1
-console.log(fib(3)); // Expected: 2
-console.log(fib(10)); // Expected: 55
-console.log(fib(20)); // Expected: 6765
+console.log(fib(0));
+console.log(fib(1));
+console.log(fib(2));
+console.log(fib(3));
+console.log(fib(10));
+console.log(fib(20));
 `,
                 "tags": ["Algorithm", "Recursion", "Dynamic Programming"]
             },
@@ -1349,11 +1373,11 @@ console.log(fib(20)); // Expected: 6765
 }
 
 // Example usage:
-console.log(lengthOfLongestSubstring("abcabcbb")); // Expected: 3
-console.log(lengthOfLongestSubstring("bbbbb"));    // Expected: 1
-console.log(lengthOfLongestSubstring("pwwkew"));   // Expected: 3
-console.log(lengthOfLongestSubstring(""));         // Expected: 0
-console.log(lengthOfLongestSubstring("au"));       // Expected: 2
+console.log(lengthOfLongestSubstring("abcabcbb"));
+console.log(lengthOfLongestSubstring("bbbbb"));
+console.log(lengthOfLongestSubstring("pwwkew"));
+console.log(lengthOfLongestSubstring(""));
+console.log(lengthOfLongestSubstring("au"));
 `,
                 "tags": ["String", "Algorithm", "Sliding Window"]
             },
@@ -1428,12 +1452,12 @@ function treeToLevelOrderArray(root) {
 const tree1 = buildTree([4, 2, 7, 1, 3, 6, 9]);
 console.log('Original Tree:', treeToLevelOrderArray(tree1));
 const invertedTree1 = invertTree(tree1);
-console.log('Inverted Tree:', treeToLevelOrderArray(invertedTree1)); // Expected: [4, 7, 2, 9, 6, 3, 1]
+console.log('Inverted Tree:', treeToLevelOrderArray(invertedTree1));
 
 const tree2 = buildTree([1, 2]);
 console.log('Original Tree:', treeToLevelOrderArray(tree2));
 const invertedTree2 = invertTree(tree2);
-console.log('Inverted Tree:', treeToLevelOrderArray(invertedTree2)); // Expected: [1, null, 2]
+console.log('Inverted Tree:', treeToLevelOrderArray(invertedTree2));
 `,
                 "tags": ["Data Structure", "Tree", "Algorithm"]
             },
@@ -1459,12 +1483,12 @@ console.log('Inverted Tree:', treeToLevelOrderArray(invertedTree2)); // Expected
 }
 
 // Example usage:
-console.log(countBits(0));  // Expected: 0
-console.log(countBits(1));  // Expected: 1 (0001)
-console.log(countBits(2));  // Expected: 1 (0010)
-console.log(countBits(3));  // Expected: 2 (0011)
-console.log(countBits(11)); // Expected: 3 (1011)
-console.log(countBits(128)); // Expected: 1 (10000000)
+console.log(countBits(0));
+console.log(countBits(1));
+console.log(countBits(2));
+console.log(countBits(3));
+console.log(countBits(11));
+console.log(countBits(128));
 `,
                 "tags": ["Bit Manipulation", "Algorithm", "Number"]
             },
@@ -1490,12 +1514,12 @@ console.log(countBits(128)); // Expected: 1 (10000000)
 }
 
 // Example usage:
-console.log(compressString('aaabbc'));   // Expected: "a3b2c1"
-console.log(compressString('aabbccddeeff')); // Expected: "a2b2c2d2e2f2"
-console.log(compressString('abc'));      // Expected: "a1b1c1"
-console.log(compressString('aaaaa'));    // Expected: "a5"
-console.log(compressString(''));         // Expected: ""
-console.log(compressString('AABBCC'));   // Expected: "A2B2C2"
+console.log(compressString('aaabbc'));
+console.log(compressString('aabbccddeeff'));
+console.log(compressString('abc'));
+console.log(compressString('aaaaa'));
+console.log(compressString(''));
+console.log(compressString('AABBCC'));
 `,
                 "tags": ["String", "Algorithm"]
             },
@@ -1546,21 +1570,17 @@ function createListWithCycle(arr, pos = -1) {
 }
 
 // Example usage:
-// List with a cycle: 1 -> 2 -> 3 -> 2 (cycle to node with value 2)
-const list1 = createListWithCycle([3, 2, 0, -4], 1); // pos 1 means index 1 (value 2)
-console.log('Has cycle (list1)?', hasCycle(list1)); // Expected: true
+const list1 = createListWithCycle([3, 2, 0, -4], 1);
+console.log('Has cycle (list1)?', hasCycle(list1));
 
-// List without a cycle: 1 -> 2 -> 3 -> null
 const list2 = createListWithCycle([1, 2, 3]);
-console.log('Has cycle (list2)?', hasCycle(list2)); // Expected: false
+console.log('Has cycle (list2)?', hasCycle(list2));
 
-// Single node with a cycle
 const list3 = createListWithCycle([1], 0);
-console.log('Has cycle (list3)?', hasCycle(list3)); // Expected: true
+console.log('Has cycle (list3)?', hasCycle(list3));
 
-// Empty list
 const list4 = createListWithCycle([]);
-console.log('Has cycle (list4)?', hasCycle(list4)); // Expected: false
+console.log('Has cycle (list4)?', hasCycle(list4));
 `,
                 "tags": ["Data Structure", "Linked List", "Algorithm"]
             },
@@ -1586,11 +1606,11 @@ console.log('Has cycle (list4)?', hasCycle(list4)); // Expected: false
 }
 
 // Example usage:
-console.log(mySqrt(4));   // Expected: 2
-console.log(mySqrt(8));   // Expected: 2 (integer part)
-console.log(mySqrt(0));   // Expected: 0
-console.log(mySqrt(1));   // Expected: 1
-console.log(mySqrt(2147395600)); // Expected: 46340
+console.log(mySqrt(4));
+console.log(mySqrt(8));
+console.log(mySqrt(0));
+console.log(mySqrt(1));
+console.log(mySqrt(2147395600));
 `,
                 "tags": ["Math", "Algorithm", "Number"]
             },
@@ -1621,13 +1641,13 @@ console.log(mySqrt(2147395600)); // Expected: 46340
 }
 
 // Example usage:
-console.log(myPow(2, 3));   // Expected: 8
-console.log(myPow(5, 0));   // Expected: 1
-console.log(myPow(2, -2));  // Expected: 0.25
-console.log(myPow(3, 4));   // Expected: 81
-console.log(myPow(0, 5));   // Expected: 0
-console.log(myPow(-2, 3));  // Expected: -8
-console.log(myPow(-2, 2));  // Expected: 4
+console.log(myPow(2, 3));
+console.log(myPow(5, 0));
+console.log(myPow(2, -2));
+console.log(myPow(3, 4));
+console.log(myPow(0, 5));
+console.log(myPow(-2, 3));
+console.log(myPow(-2, 2));
 `,
                 "tags": ["Math", "Algorithm", "Number"]
             },
@@ -1714,15 +1734,15 @@ function treeToLevelOrderArray(root) {
 // Example usage:
 const tree1 = buildTree([1, 2, 3, null, null, 4, 5]);
 const serializedTree1 = serialize(tree1);
-console.log('Serialized:', serializedTree1); // Expected: "1,2,3,null,null,4,5"
+console.log('Serialized:', serializedTree1);
 const deserializedTree1 = deserialize(serializedTree1);
-console.log('Deserialized:', treeToLevelOrderArray(deserializedTree1)); // Expected: [1, 2, 3, null, null, 4, 5]
+console.log('Deserialized:', treeToLevelOrderArray(deserializedTree1));
 
 const tree2 = buildTree([]);
 const serializedTree2 = serialize(tree2);
-console.log('Serialized (empty):', serializedTree2); // Expected: ""
+console.log('Serialized (empty):', serializedTree2);
 const deserializedTree2 = deserialize(serializedTree2);
-console.log('Deserialized (empty):', treeToLevelOrderArray(deserializedTree2)); // Expected: []
+console.log('Deserialized (empty):', treeToLevelOrderArray(deserializedTree2));
 `,
                 "tags": ["Data Structure", "Tree", "Serialization"]
             },
@@ -1748,10 +1768,10 @@ console.log('Deserialized (empty):', treeToLevelOrderArray(deserializedTree2)); 
 }
 
 // Example usage:
-console.log(countSubstrings('abc'));   // Expected: 3
-console.log(countSubstrings('aaa'));   // Expected: 6
-console.log(countSubstrings('aba'));   // Expected: 4 (a, b, a, aba)
-console.log(countSubstrings('racecar')); // Expected: 10 (r, a, c, e, c, a, r, aceca, racecar, cec)
+console.log(countSubstrings('abc'));
+console.log(countSubstrings('aaa'));
+console.log(countSubstrings('aba'));
+console.log(countSubstrings('racecar'));
 `,
                 "tags": ["String", "Algorithm", "Dynamic Programming"]
             },
@@ -1777,11 +1797,11 @@ console.log(countSubstrings('racecar')); // Expected: 10 (r, a, c, e, c, a, r, a
 }
 
 // Example usage:
-console.log(removeDuplicateCharacters('banana')); // Expected: "ban"
-console.log(removeDuplicateCharacters('hello world')); // Expected: "helo wrd"
-console.log(removeDuplicateCharacters('programming')); // Expected: "progamin"
-console.log(removeDuplicateCharacters('')); // Expected: ""
-console.log(removeDuplicateCharacters('abcde')); // Expected: "abcde"
+console.log(removeDuplicateCharacters('banana'));
+console.log(removeDuplicateCharacters('hello world'));
+console.log(removeDuplicateCharacters('programming'));
+console.log(removeDuplicateCharacters(''));
+console.log(removeDuplicateCharacters('abcde'));
 `,
                 "tags": ["String", "Algorithm"]
             },
@@ -1807,10 +1827,10 @@ console.log(removeDuplicateCharacters('abcde')); // Expected: "abcde"
 }
 
 // Example usage:
-console.log(twoSum([2, 7, 11, 15], 9)); // Expected: [0, 1]
-console.log(twoSum([3, 2, 4], 6));      // Expected: [1, 2]
-console.log(twoSum([3, 3], 6));         // Expected: [0, 1]
-console.log(twoSum([1, 2, 3, 4, 5], 10)); // Expected: [] or null (no solution)
+console.log(twoSum([2, 7, 11, 15], 9));
+console.log(twoSum([3, 2, 4], 6));
+console.log(twoSum([3, 3], 6));
+console.log(twoSum([1, 2, 3, 4, 5], 10));
 `,
                 "tags": ["Array", "Algorithm", "Hash Table"]
             },
@@ -1836,11 +1856,11 @@ console.log(twoSum([1, 2, 3, 4, 5], 10)); // Expected: [] or null (no solution)
 }
 
 // Example usage:
-console.log(largestDifference([1, 2, 3, 4, 5]));   // Expected: 4
-console.log(largestDifference([-1, -5, -2]));  // Expected: 4
-console.log(largestDifference([5, 1, 9, 2, 7])); // Expected: 8
-console.log(largestDifference([10]));           // Expected: 0 (or error, depends on spec)
-console.log(largestDifference([]));             // Expected: 0 (or error, depends on spec)
+console.log(largestDifference([1, 2, 3, 4, 5]));
+console.log(largestDifference([-1, -5, -2]));
+console.log(largestDifference([5, 1, 9, 2, 7]));
+console.log(largestDifference([10]));
+console.log(largestDifference([]));
 `,
                 "tags": ["Array", "Algorithm"]
             },
@@ -1866,11 +1886,11 @@ console.log(largestDifference([]));             // Expected: 0 (or error, depend
 }
 
 // Example usage:
-console.log(findMedianSortedArrays([1, 3], [2]));       // Expected: 2.0
-console.log(findMedianSortedArrays([1, 2], [3, 4]));    // Expected: 2.5
-console.log(findMedianSortedArrays([0, 0], [0, 0]));    // Expected: 0.0
-console.log(findMedianSortedArrays([], [1]));          // Expected: 1.0
-console.log(findMedianSortedArrays([2], []));          // Expected: 2.0
+console.log(findMedianSortedArrays([1, 3], [2]));
+console.log(findMedianSortedArrays([1, 2], [3, 4]));
+console.log(findMedianSortedArrays([0, 0], [0, 0]));
+console.log(findMedianSortedArrays([], [1]));
+console.log(findMedianSortedArrays([2], []));
 `,
                 "tags": ["Array", "Algorithm", "Search"]
             },
@@ -1943,10 +1963,10 @@ function treeToLevelOrderArray(root) {
 
 // Example usage:
 const tree1 = buildTree([3, 9, 20, null, null, 15, 7]);
-console.log(verticalOrder(tree1)); // Expected: [[9], [3, 15], [20], [7]]
+console.log(verticalOrder(tree1));
 
 const tree2 = buildTree([1, 2, 3, 4, 5, 6, 7]);
-console.log(verticalOrder(tree2)); // Expected: [[4], [2], [1, 5, 6], [3], [7]]
+console.log(verticalOrder(tree2));
 `,
                 "tags": ["Data Structure", "Tree", "Traversal", "Algorithm"]
             },
@@ -1972,10 +1992,10 @@ console.log(verticalOrder(tree2)); // Expected: [[4], [2], [1, 5, 6], [3], [7]]
 }
 
 // Example usage:
-console.log(intersectSorted([1, 2, 2, 1], [2, 2])); // Expected: [2, 2]
-console.log(intersectSorted([4, 9, 5], [9, 4, 9, 8, 4])); // Expected: [4, 9] (order might vary based on implementation)
-console.log(intersectSorted([1, 2, 3], [4, 5, 6])); // Expected: []
-console.log(intersectSorted([], [1, 2])); // Expected: []
+console.log(intersectSorted([1, 2, 2, 1], [2, 2]));
+console.log(intersectSorted([4, 9, 5], [9, 4, 9, 8, 4]));
+console.log(intersectSorted([1, 2, 3], [4, 5, 6]));
+console.log(intersectSorted([], [1, 2]));
 `,
                 "tags": ["Array", "Algorithm", "Two Pointers"]
             },
@@ -1996,9 +2016,9 @@ console.log(intersectSorted([], [1, 2])); // Expected: []
 }
 
 // Example usage:
-console.log(intersectUnsorted([1, 2, 2, 1], [2, 2])); // Expected: [2, 2]
-console.log(intersectUnsorted([4, 9, 5], [9, 4, 9, 8, 4])); // Expected: [4, 9] (order might vary based on implementation)
-console.log(intersectUnsorted([1, 2, 3], [4, 5, 6])); // Expected: []
+console.log(intersectUnsorted([1, 2, 2, 1], [2, 2]));
+console.log(intersectUnsorted([4, 9, 5], [9, 4, 9, 8, 4]));
+console.log(intersectUnsorted([1, 2, 3], [4, 5, 6]));
 `,
                 "tags": ["Array", "Algorithm", "Hash Table"]
             },
@@ -2026,19 +2046,19 @@ console.log(intersectUnsorted([1, 2, 3], [4, 5, 6])); // Expected: []
 // Example usage:
 let arr1 = [0, 1, 0, 3, 12];
 moveZeros(arr1);
-console.log(arr1); // Expected: [1, 3, 12, 0, 0]
+console.log(arr1);
 
 let arr2 = [0, 0, 0];
 moveZeros(arr2);
-console.log(arr2); // Expected: [0, 0, 0]
+console.log(arr2);
 
 let arr3 = [1, 2, 3];
 moveZeros(arr3);
-console.log(arr3); // Expected: [1, 2, 3]
+console.log(arr3);
 
 let arr4 = [0];
 moveZeros(arr4);
-console.log(arr4); // Expected: [0]
+console.log(arr4);
 `,
                 "tags": ["Array", "Algorithm", "In-place"]
             },
@@ -2072,13 +2092,13 @@ console.log(arr4); // Expected: [0]
 const cache = new LRUCache(2);
 cache.put(1, 1);
 cache.put(2, 2);
-console.log(cache.get(1));    // returns 1
-cache.put(3, 3);              // evicts key 2
-console.log(cache.get(2));    // returns -1 (not found)
-cache.put(4, 4);              // evicts key 1
-console.log(cache.get(1));    // returns -1 (not found)
-console.log(cache.get(3));    // returns 3
-console.log(cache.get(4));    // returns 4
+console.log(cache.get(1));
+cache.put(3, 3);
+console.log(cache.get(2));
+cache.put(4, 4);
+console.log(cache.get(1));
+console.log(cache.get(3));
+console.log(cache.get(4));
 `,
                 "tags": ["Data Structure", "Cache", "Design"]
             },
@@ -2104,11 +2124,11 @@ console.log(cache.get(4));    // returns 4
 }
 
 // Example usage:
-console.log(intToRoman(3));    // Expected: "III"
-console.log(intToRoman(58));   // Expected: "LVIII"
-console.log(intToRoman(1994)); // Expected: "MCMXCIV"
-console.log(intToRoman(9));    // Expected: "IX"
-console.log(intToRoman(4));    // Expected: "IV"
+console.log(intToRoman(3));
+console.log(intToRoman(58));
+console.log(intToRoman(1994));
+console.log(intToRoman(9));
+console.log(intToRoman(4));
 `,
                 "tags": ["String", "Algorithm", "Number"]
             },
@@ -2134,11 +2154,11 @@ console.log(intToRoman(4));    // Expected: "IV"
 }
 
 // Example usage:
-console.log(romanToInt('III'));    // Expected: 3
-console.log(romanToInt('LVIII'));   // Expected: 58
-console.log(romanToInt('MCMXCIV')); // Expected: 1994
-console.log(romanToInt('IX'));     // Expected: 9
-console.log(romanToInt('IV'));     // Expected: 4
+console.log(romanToInt('III'));
+console.log(romanToInt('LVIII'));
+console.log(romanToInt('MCMXCIV'));
+console.log(romanToInt('IX'));
+console.log(romanToInt('IV'));
 `,
                 "tags": ["String", "Algorithm", "Number"]
             },
@@ -2170,13 +2190,13 @@ console.log(romanToInt('IV'));     // Expected: 4
 // However, the structure would be:
 
 // const myDiv = $('#myDiv');
-// console.log(myDiv.html()); // Should get innerHTML
-// myDiv.html('<p>New Content</p>'); // Should set innerHTML
-// console.log(myDiv.hasClass('container')); // Should be true
+// console.log(myDiv.html());
+// myDiv.html('<p>New Content</p>');
+// console.log(myDiv.hasClass('container'));
 // myDiv.addClass('active');
-// console.log(myDiv.hasClass('active')); // Should be true
+// console.log(myDiv.hasClass('active'));
 // myDiv.removeClass('container');
-// console.log(myDiv.hasClass('container')); // Should be false
+// console.log(myDiv.hasClass('container'));
 `,
                 "tags": ["DOM", "Frontend"]
             },
@@ -2210,7 +2230,6 @@ function createElement(tag, children = []) {
 }
 
 // Example usage (requires a simulated DOM or running in browser):
-// Create two identical trees
 const treeA = createElement('div', [
     createElement('p', ['Hello']),
     createElement('span', ['World'])
@@ -2221,20 +2240,13 @@ const treeB = createElement('div', [
     createElement('span', ['There'])
 ]);
 
-const targetNodeA = treeA.children[0]; // The <p> tag in treeA
+const targetNodeA = treeA.children[0];
 
-// In a real browser, you'd append these to body or a container.
-// document.body.appendChild(treeA);
-// document.body.appendChild(treeB);
-
-// For testing purposes, we can manually check properties
 const correspondingNodeB = findCorrespondingNode(treeA, treeB, targetNodeA);
 
 if (correspondingNodeB) {
     console.log('Found corresponding node:', correspondingNodeB.tagName, correspondingNodeB.textContent);
-    // Expected: P Hello (if treeB's p is also "Hello") or P Hi (if treeB's p is "Hi")
-    // The content might differ, but the structure should match.
-    console.log('Is it the same element as treeB.children[0]?', correspondingNodeB === treeB.children[0]); // Expected: true
+    console.log('Is it the same element as treeB.children[0]?', correspondingNodeB === treeB.children[0]);
 } else {
     console.log('Corresponding node not found.');
 }
@@ -2284,18 +2296,18 @@ const tree1 = createElement('div', [
         createElement('li')
     ])
 ]);
-console.log('Height of tree1:', getDomTreeHeight(tree1)); // Expected: 4 (div -> p -> span -> text node) or 3 (if counting elements only)
+console.log('Height of tree1:', getDomTreeHeight(tree1));
 
 const tree2 = createElement('div', [
     createElement('p', ['A']),
     createElement('div', ['B'])
 ]);
-console.log('Height of tree2:', getDomTreeHeight(tree2)); // Expected: 2 (div -> p/div)
+console.log('Height of tree2:', getDomTreeHeight(tree2));
 
 const tree3 = createElement('div');
-console.log('Height of tree3:', getDomTreeHeight(tree3)); // Expected: 1
+console.log('Height of tree3:', getDomTreeHeight(tree3));
 
-console.log('Height of null:', getDomTreeHeight(null)); // Expected: 0
+console.log('Height of null:', getDomTreeHeight(null));
 `,
                 "tags": ["DOM", "Tree", "Algorithm"]
             },
@@ -2339,22 +2351,22 @@ history.visit('pageA');
 history.visit('pageB');
 history.visit('pageC');
 
-console.log('Current:', history.current()); // Expected: pageC
+console.log('Current:', history.current());
 
 history.back();
-console.log('Current after back:', history.current()); // Expected: pageB
+console.log('Current after back:', history.current());
 
 history.back();
-console.log('Current after another back:', history.current()); // Expected: pageA
+console.log('Current after another back:', history.current());
 
 history.forward();
-console.log('Current after forward:', history.current()); // Expected: pageB
+console.log('Current after forward:', history.current());
 
-history.visit('pageD'); // This should clear forward history
-console.log('Current after new visit:', history.current()); // Expected: pageD
+history.visit('pageD');
+console.log('Current after new visit:', history.current());
 
-history.forward(); // Should do nothing
-console.log('Current after forward (no history):', history.current()); // Expected: pageD
+history.forward();
+console.log('Current after forward (no history):', history.current());
 `,
                 "tags": ["Browser API", "Design", "Frontend"]
             },
@@ -2378,22 +2390,18 @@ console.log('Current after forward (no history):', history.current()); // Expect
 const html1 = 'Hello <b>world</b>, this is a test.';
 const keywords1 = ['world', 'test'];
 console.log(highlight(html1, keywords1));
-// Expected: "Hello <b><mark>world</mark></b>, this is a <mark>test</mark>."
 
 const html2 = '<p>JavaScript is fun.</p>';
 const keywords2 = ['JavaScript'];
 console.log(highlight(html2, keywords2));
-// Expected: "<p><mark>JavaScript</mark> is fun.</p>"
 
 const html3 = '<span>No match here.</span>';
 const keywords3 = ['xyz'];
 console.log(highlight(html3, keywords3));
-// Expected: "<span>No match here.</span>"
 
 const html4 = '<div>Case insensitive test: JavaScript javascript</div>';
-const keywords4 = ['javascript']; // Assuming case-insensitive matching is desired
+const keywords4 = ['javascript'];
 console.log(highlight(html4, keywords4));
-// Expected: "<div>Case insensitive test: <mark>JavaScript</mark> <mark>javascript</mark></div>"
 `,
                 "tags": ["String", "HTML", "DOM", "Frontend"]
             },
@@ -2422,20 +2430,12 @@ const html1 = \`
   </div>
 \`;
 console.log(extractAnchors(html1));
-// Expected: [
-//   { href: "/page1", text: "Link One" },
-//   { href: "https://example.com", text: "External Link" }
-// ]
 
 const html2 = '<p>No links here.</p>';
-console.log(extractAnchors(html2)); // Expected: []
+console.log(extractAnchors(html2));
 
 const html3 = '<a href="#top">Top</a><a href="/bottom">Bottom</a>';
 console.log(extractAnchors(html3));
-// Expected: [
-//   { href: "#top", text: "Top" },
-//   { href: "/bottom", text: "Bottom" }
-// ]
 `,
                 "tags": ["HTML", "DOM", "String", "Frontend"]
             },
@@ -2477,12 +2477,8 @@ const tree = createElement('div', [
     ])
 ]);
 
-// In a real browser, you'd append this to body or a container.
-// document.body.appendChild(tree);
-
 const nodes = traverseLevelByLevel(tree);
 console.log(nodes.map(node => node.tagName));
-// Expected (approx): ["DIV", "P", "UL", "SPAN", "LI", "LI"]
 `,
                 "tags": ["DOM", "Tree", "Traversal", "Algorithm", "BFS"]
             },
@@ -2527,20 +2523,17 @@ const container = createElement('div', [
     createElement('p', ['Paragraph 2'])
 ]);
 
-// In a real browser, you'd append this to body or a container.
-// document.body.appendChild(container);
+const span2 = container.children[2];
+const p1 = container.children[1];
 
-const span2 = container.children[2]; // Span 2
-const p1 = container.children[1];    // Paragraph 1
+console.log('Next left sibling of Span 2:', nextLeftSibling(span2)?.tagName);
+console.log('Previous left sibling of Span 2:', previousLeftSibling(span2)?.tagName);
 
-console.log('Next left sibling of Span 2:', nextLeftSibling(span2)?.tagName); // Expected: P
-console.log('Previous left sibling of Span 2:', previousLeftSibling(span2)?.tagName); // Expected: P
+console.log('Next left sibling of Paragraph 1:', nextLeftSibling(p1)?.tagName);
+console.log('Previous left sibling of Paragraph 1:', previousLeftSibling(p1)?.tagName);
 
-console.log('Next left sibling of Paragraph 1:', nextLeftSibling(p1)?.tagName); // Expected: SPAN
-console.log('Previous left sibling of Paragraph 1:', previousLeftSibling(p1)?.tagName); // Expected: SPAN
-
-console.log('Next left sibling of first child:', nextLeftSibling(container.children[0])); // Expected: null
-console.log('Previous left sibling of last child:', previousLeftSibling(container.children[3])); // Expected: SPAN
+console.log('Next left sibling of first child:', nextLeftSibling(container.children[0]));
+console.log('Previous left sibling of last child:', previousLeftSibling(container.children[3]));
 `,
                 "tags": ["DOM", "Traversal"]
             },
@@ -2561,31 +2554,24 @@ console.log('Previous left sibling of last child:', previousLeftSibling(containe
 }
 
 // Example usage (requires a simulated DOM or running in browser):
-// Assume you have an HTML input element: <input id="myInput" type="text">
-// And a data object:
 const data = {
   message: 'Initial Message'
 };
 
-// For testing purposes, create a dummy input element
 const input = document.createElement('input');
 input.type = 'text';
 input.id = 'myInput';
-// document.body.appendChild(input); // Uncomment if running in a real DOM
 
 bind(input, data, 'message');
 
-console.log('Initial input value:', input.value); // Expected: "Initial Message"
+console.log('Initial input value:', input.value);
 
-// Simulate user typing
 input.value = 'Hello World';
-input.dispatchEvent(new Event('input')); // Trigger the input event
-console.log('Data after input change:', data.message); // Expected: "Hello World"
+input.dispatchEvent(new Event('input'));
+console.log('Data after input change:', data.message);
 
-// Simulate data change from elsewhere
 data.message = 'Updated from data';
-// The binding should automatically update the input's value
-console.log('Input value after data change:', input.value); // Expected: "Updated from data"
+console.log('Input value after data change:', input.value);
 `,
                 "tags": ["Frontend", "DOM", "Design Pattern"]
             },
@@ -2632,17 +2618,14 @@ const root = createElement('div', { id: 'app' }, [
     ])
 ]);
 
-// In a real browser, you'd append this to body or a container.
-// document.body.appendChild(root);
-
 const target1 = root.querySelector('#unique-span');
-console.log('Selector for unique-span:', getCssSelector(target1)); // Expected: "#app > div.container > #unique-span"
+console.log('Selector for unique-span:', getCssSelector(target1));
 
-const target2 = root.querySelector('p.text'); // First p.text
-console.log('Selector for first p.text:', getCssSelector(target2)); // Expected: "#app > div.container > p.text:nth-child(1)" or similar
+const target2 = root.querySelector('p.text');
+console.log('Selector for first p.text:', getCssSelector(target2));
 
-const target3 = root.children[1].children[0]; // Second p.text
-console.log('Selector for second p.text:', getCssSelector(target3)); // Expected: "#app > div.container:nth-child(2) > p.text" or similar
+const target3 = root.children[1].children[0];
+console.log('Selector for second p.text:', getCssSelector(target3));
 `,
                 "tags": ["DOM", "Frontend", "Algorithm"]
             },
@@ -2672,16 +2655,15 @@ function deleteCookie(name) {
 
 // Example usage (requires a browser environment for document.cookie):
 // Note: For actual testing, you'd need to run this in a browser.
-// In this simulated environment, document.cookie behaves differently.
 
 // setCookie('username', 'JohnDoe', 7);
-// console.log('Username cookie:', getCookie('username')); // Expected: "JohnDoe"
+// console.log('Username cookie:', getCookie('username'));
 
-// setCookie('theme', 'dark'); // Session cookie
-// console.log('Theme cookie:', getCookie('theme')); // Expected: "dark"
+// setCookie('theme', 'dark');
+// console.log('Theme cookie:', getCookie('theme'));
 
 // deleteCookie('username');
-// console.log('Username cookie after delete:', getCookie('username')); // Expected: "" or null
+// console.log('Username cookie after delete:', getCookie('username'));
 `,
                 "tags": ["Browser API", "Frontend"]
             },
@@ -2711,21 +2693,19 @@ function getWithExpiry(key) {
 }
 
 // Example usage:
-// Set an item that expires in 2 seconds
 setWithExpiry('myKey', 'myValue', 2000);
-console.log('Immediately after set:', getWithExpiry('myKey')); // Expected: "myValue"
+console.log('Immediately after set:', getWithExpiry('myKey'));
 
 setTimeout(() => {
-  console.log('After 1 second:', getWithExpiry('myKey')); // Expected: "myValue"
+  console.log('After 1 second:', getWithExpiry('myKey'));
 }, 1000);
 
 setTimeout(() => {
-  console.log('After 3 seconds:', getWithExpiry('myKey')); // Expected: null (expired)
+  console.log('After 3 seconds:', getWithExpiry('myKey'));
 }, 3000);
 
-// Set an item without expiry (or very long expiry)
 setWithExpiry('persistentKey', 'someData');
-console.log('Persistent key:', getWithExpiry('persistentKey')); // Expected: "someData"
+console.log('Persistent key:', getWithExpiry('persistentKey'));
 `,
                 "tags": ["Browser API", "Storage", "Frontend"]
             },
@@ -2753,7 +2733,7 @@ const task3 = () => new Promise(resolve => setTimeout(() => { console.log('Task 
 console.log('Starting sequence...');
 sequence([task1, task2, task3])
   .then(results => {
-    console.log('All tasks in sequence done:', results); // Expected: [1, 2, 3]
+    console.log('All tasks in sequence done:', results);
   })
   .catch(error => {
     console.error('Sequence error:', error);
@@ -2765,7 +2745,7 @@ sequence([task1, failingTask, task3])
     console.log('All tasks in sequence done:', results);
   })
   .catch(error => {
-    console.error('Sequence with failure:', error); // Expected to catch 'Failed task'
+    console.error('Sequence with failure:', error);
   });
 `,
                 "tags": ["Promise", "Async", "Concurrency"]
@@ -2794,7 +2774,7 @@ const task3 = () => new Promise(resolve => setTimeout(() => { console.log('Task 
 console.log('Starting parallel...');
 parallel([task1, task2, task3])
   .then(results => {
-    console.log('All tasks in parallel done:', results); // Expected: [1, 2, 3] (order of results matches input array order)
+    console.log('All tasks in parallel done:', results);
   })
   .catch(error => {
     console.error('Parallel error:', error);
@@ -2806,7 +2786,7 @@ parallel([task1, failingTask, task3])
     console.log('All tasks in parallel done:', results);
   })
   .catch(error => {
-    console.error('Parallel with failure:', error); // Expected to catch 'Failed task'
+    console.error('Parallel with failure:', error);
   });
 `,
                 "tags": ["Promise", "Async", "Concurrency"]
@@ -2835,15 +2815,15 @@ const task3 = () => new Promise(resolve => setTimeout(() => { console.log('Task 
 console.log('Starting race...');
 race([task1, task2, task3])
   .then(result => {
-    console.log('Race winner:', result); // Expected: (depends on which promise finishes first)
+    console.log('Race winner:', result);
   })
   .catch(error => {
-    console.error('Race loser:', error); // Expected: (depends on which promise finishes first and if it rejects)
+    console.error('Race loser:', error);
   });
 
 const p1 = new Promise(resolve => setTimeout(() => resolve('A'), 500));
 const p2 = new Promise(resolve => setTimeout(() => resolve('B'), 100));
-race([() => p1, () => p2]).then(console.log); // Expected: B
+race([() => p1, () => p2]).then(console.log);
 `,
                 "tags": ["Promise", "Async", "Concurrency"]
             },
@@ -2897,19 +2877,19 @@ timers.setTimeout(() => {
   log.push('B');
 }, 50);
 
-console.log('Before advance:', log); // Expected: []
+console.log('Before advance:', log);
 
 timers.advanceTimersByTime(50);
-console.log('After 50ms advance:', log); // Expected: ["B"]
+console.log('After 50ms advance:', log);
 
 timers.advanceTimersByTime(50);
-console.log('After another 50ms advance (total 100ms):', log); // Expected: ["B", "A"]
+console.log('After another 50ms advance (total 100ms):', log);
 
 timers.reset();
 log = [];
 timers.setTimeout(() => { log.push('C'); }, 200);
 timers.runAllTimers();
-console.log('After runAllTimers:', log); // Expected: ["C"]
+console.log('After runAllTimers:', log);
 `,
                 "tags": ["Testing", "Async", "JavaScript"]
             },
@@ -2961,22 +2941,22 @@ const intervalId = timers.setInterval(() => {
 }, 100);
 
 timers.advanceTimersByTime(50);
-console.log('Count after 50ms:', count); // Expected: 0
+console.log('Count after 50ms:', count);
 
-timers.advanceTimersByTime(50); // Total 100ms
-console.log('Count after 100ms:', count); // Expected: 1
+timers.advanceTimersByTime(50);
+console.log('Count after 100ms:', count);
 
-timers.advanceTimersByTime(100); // Total 200ms
-console.log('Count after 200ms:', count); // Expected: 2
+timers.advanceTimersByTime(100);
+console.log('Count after 200ms:', count);
 
 timers.clearInterval(intervalId);
-timers.advanceTimersByTime(100); // Should not increment further
-console.log('Count after clear and 100ms:', count); // Expected: 2
+timers.advanceTimersByTime(100);
+console.log('Count after clear and 100ms:', count);
 
 timers.reset();
 count = 0;
 timers.setInterval(() => { count++; }, 50);
-timers.runAllTimers(); // Runs all pending intervals
+timers.runAllTimers();
 console.log('Count after runAllTimers (infinite loop in real scenario, but bounded by max safe iterations here):', count);
 `,
                 "tags": ["Testing", "Async", "JavaScript"]
@@ -3018,13 +2998,12 @@ const flakyOperation = () => {
 
 retry(flakyOperation, 5)
   .then(result => {
-    console.log('Final success:', result); // Expected: Data fetched successfully
+    console.log('Final success:', result);
   })
   .catch(error => {
     console.error('Final failure:', error);
   });
 
-// Example where it always fails
 let failCount = 0;
 const alwaysFails = () => {
   failCount++;
@@ -3037,7 +3016,7 @@ retry(alwaysFails, 2)
     console.log('Should not succeed:', result);
   })
   .catch(error => {
-    console.error('Caught final error:', error); // Expected: Caught final error: Always fails
+    console.error('Caught final error:', error);
   });
 `,
                 "tags": ["Promise", "Async", "Error Handling"]
@@ -3162,7 +3141,7 @@ console.log('Interval started...');
 setTimeout(() => {
   console.log('Pausing interval...');
   myInterval.pause();
-}, 250); // Should have ticked 2-3 times
+}, 250);
 
 setTimeout(() => {
   console.log('Resuming interval...');
@@ -3174,7 +3153,6 @@ setTimeout(() => {
   myInterval.clear();
 }, 800);
 
-// After clearing, no more ticks should occur.
 setTimeout(() => {
   console.log('Final count:', count);
 }, 1000);
@@ -3203,20 +3181,20 @@ setTimeout(() => {
 }
 
 // Example usage:
-console.log(detectType(1));            // Expected: "number"
-console.log(detectType("hello"));      // Expected: "string"
-console.log(detectType(true));         // Expected: "boolean"
-console.log(detectType(undefined));    // Expected: "undefined"
-console.log(detectType(null));         // Expected: "null"
-console.log(detectType({}));           // Expected: "object"
-console.log(detectType([]));           // Expected: "array"
-console.log(detectType(() => {}));     // Expected: "function"
-console.log(detectType(new Date()));   // Expected: "date"
-console.log(detectType(/a/));          // Expected: "regexp"
-console.log(detectType(new Map()));    // Expected: "map"
-console.log(detectType(new Set()));    // Expected: "set"
-console.log(detectType(Symbol('foo'))); // Expected: "symbol"
-console.log(detectType(BigInt(10)));   // Expected: "bigint"
+console.log(detectType(1));
+console.log(detectType("hello"));
+console.log(detectType(true));
+console.log(detectType(undefined));
+console.log(detectType(null));
+console.log(detectType({}));
+console.log(detectType([]));
+console.log(detectType(() => {}));
+console.log(detectType(new Date()));
+console.log(detectType(/a/));
+console.log(detectType(new Map()));
+console.log(detectType(new Set()));
+console.log(detectType(Symbol('foo')));
+console.log(detectType(BigInt(10)));
 `,
                 "tags": ["JavaScript", "Type Checking"]
             },
@@ -3254,14 +3232,14 @@ const nextState1 = produce(baseState, draft => {
 
 console.log('Base State:', JSON.stringify(baseState, null, 2));
 console.log('Next State 1:', JSON.stringify(nextState1, null, 2));
-console.log('Are baseState and nextState1 the same object?', baseState === nextState1); // Expected: false
-console.log('Are baseState.b and nextState1.b the same object?', baseState.b === nextState1.b); // Expected: false
+console.log('Are baseState and nextState1 the same object?', baseState === nextState1);
+console.log('Are baseState.b and nextState1.b the same object?', baseState.b === nextState1.b);
 
 const nextState2 = produce(baseState, draft => {
   // No changes made
 });
 console.log('Next State 2 (no changes):', JSON.stringify(nextState2, null, 2));
-console.log('Are baseState and nextState2 the same object?', baseState === nextState2); // Expected: true (optimization)
+console.log('Are baseState and nextState2 the same object?', baseState === nextState2);
 `,
                 "tags": ["State Management", "Immutability", "JavaScript"]
             },
@@ -3294,28 +3272,24 @@ console.log('Are baseState and nextState2 the same object?', baseState === nextS
 // Example usage:
 const app = new MiddlewareSystem();
 
-// Middleware 1: Add user info
 app.use((req, res, next) => {
   req.user = 'Alice';
   console.log('Middleware 1: User set to', req.user);
   next();
 });
 
-// Middleware 2: Add timestamp
 app.use((req, res, next) => {
   req.timestamp = new Date().toISOString();
   console.log('Middleware 2: Timestamp added', req.timestamp);
   next();
 });
 
-// Middleware 3: Process request and send response
 app.use((req, res, next) => {
   res.message = \`Hello \${req.user} at \${req.timestamp}\`;
   console.log('Middleware 3: Response message set');
-  next(); // Even if it's the last, next() should be called
+  next();
 });
 
-// Final handler (optional, but good practice for logging/sending)
 app.use((req, res) => {
   console.log('Final handler: Sending response', res);
 });
@@ -3359,20 +3333,20 @@ function Dog(name, breed) {
   this.breed = breed;
 }
 
-myExtends(Dog, Animal); // Apply inheritance
+myExtends(Dog, Animal);
 
 Dog.prototype.bark = function() {
   console.log(this.name + ' barks!');
 };
 
 const myDog = new Dog('Buddy', 'Golden Retriever');
-console.log(myDog.name); // Expected: Buddy
-console.log(myDog.breed); // Expected: Golden Retriever
-myDog.speak(); // Expected: Buddy makes a sound.
-myDog.bark();  // Expected: Buddy barks!
+console.log(myDog.name);
+console.log(myDog.breed);
+myDog.speak();
+myDog.bark();
 
-console.log(myDog instanceof Dog);    // Expected: true
-console.log(myDog instanceof Animal); // Expected: true
+console.log(myDog instanceof Dog);
+console.log(myDog instanceof Animal);
 `,
                 "tags": ["OOP", "JavaScript", "Inheritance"]
             },
@@ -3399,13 +3373,13 @@ console.log(myDog instanceof Animal); // Expected: true
 
 // Example usage:
 const thunk1 = () => 1;
-console.log(flattenThunk(thunk1)); // Expected: 1
+console.log(flattenThunk(thunk1));
 
 const thunk2 = () => () => 2;
-console.log(flattenThunk(thunk2)); // Expected: 2
+console.log(flattenThunk(thunk2));
 
 const thunk3 = () => () => () => 'hello';
-console.log(flattenThunk(thunk3)); // Expected: "hello"
+console.log(flattenThunk(thunk3));
 
 const thunk4 = () => {
   console.log('Executing outer thunk');
@@ -3414,7 +3388,7 @@ const thunk4 = () => {
     return 42;
   };
 };
-console.log(flattenThunk(thunk4)); // Expected: 42 (with console logs)
+console.log(flattenThunk(thunk4));
 `,
                 "tags": ["Function", "Recursion", "JavaScript"]
             },
@@ -3440,7 +3414,7 @@ const mockApi = (page) => {
   console.log(\`Fetching page \${page}\`);
   return new Promise(resolve => {
     setTimeout(() => {
-      if (page < 3) { // Simulate 3 pages of data
+      if (page < 3) {
         resolve({
           data: \`Data for page \${page}\`,
           nextPage: page + 1
@@ -3448,14 +3422,13 @@ const mockApi = (page) => {
       } else {
         resolve({
           data: \`Data for page \${page}\`,
-          nextPage: null // No more pages
+          nextPage: null
         });
       }
     }, 200);
   });
 };
 
-// Reset mock API for fresh runs
 const resetMockApi = () => { currentPage = 0; };
 const apiFn = () => {
   currentPage++;
@@ -3536,7 +3509,7 @@ const subscription = myObservable.subscribe({
 setTimeout(() => {
   console.log('Unsubscribing after 250ms...');
   subscription.unsubscribe();
-}, 250); // Should receive 0, 1, 2 then unsubscribe
+}, 250);
 `,
                 "tags": ["RxJS", "Async", "Design Pattern"]
             },
@@ -3562,13 +3535,13 @@ setTimeout(() => {
 }
 
 // Example usage:
-console.log(addCommas('12345'));        // Expected: "12,345"
-console.log(addCommas('1234567'));      // Expected: "1,234,567"
-console.log(addCommas('123'));          // Expected: "123"
-console.log(addCommas('12345.678'));    // Expected: "12,345.678"
-console.log(addCommas('123456789.0123')); // Expected: "123,456,789.0123"
-console.log(addCommas('0'));            // Expected: "0"
-console.log(addCommas('-12345'));       // Expected: "-12,345"
+console.log(addCommas('12345'));
+console.log(addCommas('1234567'));
+console.log(addCommas('123'));
+console.log(addCommas('12345.678'));
+console.log(addCommas('123456789.0123'));
+console.log(addCommas('0'));
+console.log(addCommas('-12345'));
 `,
                 "tags": ["String", "Number", "Formatting"]
             },
@@ -3594,11 +3567,11 @@ console.log(addCommas('-12345'));       // Expected: "-12,345"
 }
 
 // Example usage:
-console.log(hexToRgba('#FF0000'));        // Expected: "rgba(255, 0, 0, 1)"
-console.log(hexToRgba('#00FF00', 0.7));    // Expected: "rgba(0, 255, 0, 0.7)"
-console.log(hexToRgba('#00F'));           // Expected: "rgba(0, 0, 255, 1)"
-console.log(hexToRgba('#F0F0F0', 0.2));    // Expected: "rgba(240, 240, 240, 0.2)"
-console.log(hexToRgba('#123456'));        // Expected: "rgba(18, 52, 86, 1)"
+console.log(hexToRgba('#FF0000'));
+console.log(hexToRgba('#00FF00', 0.7));
+console.log(hexToRgba('#00F'));
+console.log(hexToRgba('#F0F0F0', 0.2));
+console.log(hexToRgba('#123456'));
 `,
                 "tags": ["String", "Color", "Frontend"]
             },
@@ -3624,13 +3597,13 @@ console.log(hexToRgba('#123456'));        // Expected: "rgba(18, 52, 86, 1)"
 }
 
 // Example usage:
-console.log(snakeToCamel('hello_world'));        // Expected: "helloWorld"
-console.log(snakeToCamel('foo_bar_baz'));       // Expected: "fooBarBaz"
-console.log(snakeToCamel('single_word'));       // Expected: "singleWord"
-console.log(snakeToCamel('no_underscore'));     // Expected: "noUnderscore"
-console.log(snakeToCamel('alreadyCamelCase'));  // Expected: "alreadyCamelCase"
-console.log(snakeToCamel(''));                   // Expected: ""
-console.log(snakeToCamel('_leading_underscore')); // Expected: "LeadingUnderscore" (or _leadingUnderscore depending on spec)
+console.log(snakeToCamel('hello_world'));
+console.log(snakeToCamel('foo_bar_baz'));
+console.log(snakeToCamel('single_word'));
+console.log(snakeToCamel('no_underscore'));
+console.log(snakeToCamel('alreadyCamelCase'));
+console.log(snakeToCamel(''));
+console.log(snakeToCamel('_leading_underscore'));
 `,
                 "tags": ["String", "Utility", "Frontend"]
             },
@@ -3688,7 +3661,6 @@ console.log(snakeToCamel('_leading_underscore')); // Expected: "LeadingUnderscor
     // Your code here
   }
 
-  // Optional: iterator
   *[Symbol.iterator]() {
     // Your code here
   }
@@ -3696,23 +3668,23 @@ console.log(snakeToCamel('_leading_underscore')); // Expected: "LeadingUnderscor
 
 // Example usage:
 const params1 = new MyURLSearchParams('?a=1&b=2&a=3');
-console.log('Get a:', params1.get('a'));     // Expected: "1"
-console.log('Get all a:', params1.getAll('a')); // Expected: ["1", "3"]
-console.log('Has b:', params1.has('b'));     // Expected: true
-console.log('Has c:', params1.has('c'));     // Expected: false
+console.log('Get a:', params1.get('a'));
+console.log('Get all a:', params1.getAll('a'));
+console.log('Has b:', params1.has('b'));
+console.log('Has c:', params1.has('c'));
 
 params1.append('c', '4');
-console.log('After append c=4:', params1.toString()); // Expected: "a=1&b=2&a=3&c=4"
+console.log('After append c=4:', params1.toString());
 
 params1.set('b', 'newB');
-console.log('After set b=newB:', params1.toString()); // Expected: "a=1&b=newB&a=3&c=4"
+console.log('After set b=newB:', params1.toString());
 
 params1.delete('a');
-console.log('After delete a:', params1.toString()); // Expected: "b=newB&c=4"
+console.log('After delete a:', params1.toString());
 
 const params2 = new MyURLSearchParams('b=2&a=1');
 params2.sort();
-console.log('Sorted params2:', params2.toString()); // Expected: "a=1&b=2"
+console.log('Sorted params2:', params2.toString());
 `,
                 "tags": ["Browser API", "String", "Frontend"]
             },
@@ -3743,13 +3715,13 @@ console.log('Sorted params2:', params2.toString()); // Expected: "a=1&b=2"
 }
 
 // Example usage:
-console.log(validateIPAddress("172.16.254.1"));        // Expected: "IPv4"
-console.log(validateIPAddress("2001:0db8:85a3:0:0:8A2E:0370:7334")); // Expected: "IPv6"
-console.log(validateIPAddress("256.256.256.256"));     // Expected: "Neither"
-console.log(validateIPAddress("2001:0db8:85a3:0:0:8A2E:0370:7334:")); // Expected: "Neither" (extra colon)
-console.log(validateIPAddress("1.1.1.0.1"));          // Expected: "Neither" (too many parts)
-console.log(validateIPAddress("0.0.0.0"));            // Expected: "IPv4"
-console.log(validateIPAddress("::1"));               // Expected: "IPv6" (shortened)
+console.log(validateIPAddress("172.16.254.1"));
+console.log(validateIPAddress("2001:0db8:85a3:0:0:8A2E:0370:7334"));
+console.log(validateIPAddress("256.256.256.256"));
+console.log(validateIPAddress("2001:0db8:85a3:0:0:8A2E:0370:7334:"));
+console.log(validateIPAddress("1.1.1.0.1"));
+console.log(validateIPAddress("0.0.0.0"));
+console.log(validateIPAddress("::1"));
 `,
                 "tags": ["String", "Validation", "Networking"]
             },
@@ -3775,13 +3747,13 @@ console.log(validateIPAddress("::1"));               // Expected: "IPv6" (shorte
 }
 
 // Example usage:
-console.log(isValid("()"));      // Expected: true
-console.log(isValid("()[]{}"));  // Expected: true
-console.log(isValid("([{}])"));  // Expected: true
-console.log(isValid("(]"));      // Expected: false
-console.log(isValid("([)]"));    // Expected: false
-console.log(isValid("{[]}"));    // Expected: true
-console.log(isValid(""));        // Expected: true
+console.log(isValid("()"));
+console.log(isValid("()[]{}"));
+console.log(isValid("([{}])"));
+console.log(isValid("(]"));
+console.log(isValid("([)]"));
+console.log(isValid("{[]}"));
+console.log(isValid(""));
 `,
                 "tags": ["String", "Validation", "Stack"]
             },
@@ -3807,12 +3779,12 @@ console.log(isValid(""));        // Expected: true
 }
 
 // Example usage:
-console.log(calculate("1 + 1"));       // Expected: 2
-console.log(calculate(" 2-1 + 2 "));    // Expected: 3
-console.log(calculate("(1+(4+5+2)-3)+(6+8)")); // Expected: 23
-console.log(calculate("1"));            // Expected: 1
-console.log(calculate("-1 + 2"));       // Expected: 1
-console.log(calculate("1 - (5 - 2)"));  // Expected: -2
+console.log(calculate("1 + 1"));
+console.log(calculate(" 2-1 + 2 "));
+console.log(calculate("(1+(4+5+2)-3)+(6+8)"));
+console.log(calculate("1"));
+console.log(calculate("-1 + 2"));
+console.log(calculate("1 - (5 - 2)"));
 `,
                 "tags": ["Algorithm", "Math", "String", "Stack"]
             },
@@ -3834,27 +3806,8 @@ console.log(calculate("1 - (5 - 2)"));  // Expected: -2
 
 // Example usage:
 // LazyMan('Hank').eat('dinner').sleep(10).eat('supper');
-// Expected output (with delays):
-// Hi! This is Hank!
-// Eat dinner
-// (wait 10 seconds)
-// Wake up after 10
-// Eat supper
-
 // LazyMan('Tony').sleep(5).eat('lunch');
-// Expected output (with delays):
-// Hi! This is Tony!
-// (wait 5 seconds)
-// Wake up after 5
-// Eat lunch
-
 // LazyMan('Peter').eat('lunch').sleepFirst(5).eat('dinner');
-// Expected output (with delays):
-// (wait 5 seconds)
-// Wake up after 5
-// Hi! This is Peter!
-// Eat lunch
-// Eat dinner
 `,
                 "tags": ["Design Pattern", "Async", "Function Chaining"]
             },
@@ -3880,12 +3833,12 @@ console.log(calculate("1 - (5 - 2)"));  // Expected: -2
 }
 
 // Example usage:
-console.log(angleClock(12, 0));  // Expected: 0
-console.log(angleClock(3, 0));   // Expected: 90
-console.log(angleClock(3, 30));  // Expected: 75
-console.log(angleClock(1, 57));  // Expected: 76.5
-console.log(angleClock(6, 0));   // Expected: 180
-console.log(angleClock(12, 30)); // Expected: 165
+console.log(angleClock(12, 0));
+console.log(angleClock(3, 0));
+console.log(angleClock(3, 30));
+console.log(angleClock(1, 57));
+console.log(angleClock(6, 0));
+console.log(angleClock(12, 30));
 `,
                 "tags": ["Math", "Algorithm"]
             },
@@ -3907,34 +3860,17 @@ console.log(angleClock(12, 30)); // Expected: 165
 
 // Helper to render the result to a container for observation
 function render(templateResult, container) {
-  // This part would typically be handled by a full lit-html implementation
-  // For this problem, you might just return an object representing the DOM structure
-  // or focus on the string interpolation aspect.
-  // For demonstration, we'll simulate rendering to a div.
   if (container instanceof HTMLElement) {
-    container.innerHTML = templateResult.html; // Simplified
-    // You would also handle dynamic parts / values here
+    container.innerHTML = templateResult.html;
   }
 }
 
-// Example usage (requires a simulated DOM or running in browser):
+// Example usage:
 const name = 'World';
 const myTemplate = html\`<h1>Hello \${name}!</h1><p>Count: \${1 + 2}</p>\`;
 
-// Simulate a container
 const containerDiv = document.createElement('div');
-// document.body.appendChild(containerDiv); // Uncomment to see in browser DOM
-
-// Render the template (simplified)
-// In a full lit-html, this would update efficiently.
-// Here, we just show the HTML string.
 console.log('Generated HTML string:', myTemplate.html);
-// Expected: "<h1>Hello <!--?-->!</h1><p>Count: <!--?--></p>" (with placeholders)
-// The actual values would be handled by lit-html's rendering engine.
-
-// If you want to see the actual rendered content:
-// render(myTemplate, containerDiv);
-// console.log('Rendered div content:', containerDiv.innerHTML);
 `,
                 "tags": ["Frontend", "Templating", "DOM"]
             },
@@ -3957,26 +3893,15 @@ console.log('Generated HTML string:', myTemplate.html);
 // Example usage:
 const vnode1 = createElement('div', { id: 'app' }, 'Hello World');
 console.log('VNode 1:', JSON.stringify(vnode1, null, 2));
-// Expected: { type: 'div', props: { id: 'app', children: ['Hello World'] } }
 
 const vnode2 = createElement('ul', null,
   createElement('li', null, 'Item 1'),
   createElement('li', { class: 'active' }, 'Item 2')
 );
 console.log('VNode 2:', JSON.stringify(vnode2, null, 2));
-// Expected: {
-//   "type": "ul",
-//   "props": {
-//     "children": [
-//       { "type": "li", "props": { "children": ["Item 1"] } },
-//       { "type": "li", "props": { "class": "active", "children": ["Item 2"] } }
-//     ]
-//   }
-// }
 
 const vnode3 = createElement('span');
 console.log('VNode 3:', JSON.stringify(vnode3, null, 2));
-// Expected: { type: 'span', props: { children: [] } }
 `,
                 "tags": ["Virtual DOM", "Frontend", "React"]
             },
@@ -3993,8 +3918,6 @@ console.log('VNode 3:', JSON.stringify(vnode3, null, 2));
                 ],
                 "link": "https://bigfrontend.dev/problem/Virtual-DOM-II-Functional-Component",
                 "boilerplate": `function createElement(type, props, ...children) {
-  // Your existing createElement logic
-  // Add support for functional components here
   if (typeof type === 'function') {
     return type({ ...props, children });
   }
@@ -4003,12 +3926,11 @@ console.log('VNode 3:', JSON.stringify(vnode3, null, 2));
     type,
     props: {
       ...props,
-      children: children.flat() // Flatten children array
+      children: children.flat()
     }
   };
 }
 
-// Example Functional Component
 const Greeting = ({ name }) => {
   return createElement('h1', null, \`Hello, \${name}!\`);
 };
@@ -4020,22 +3942,12 @@ const Button = ({ onClick, text }) => {
 // Example usage:
 const vnode1 = createElement(Greeting, { name: 'Alice' });
 console.log('VNode from Functional Component (Greeting):', JSON.stringify(vnode1, null, 2));
-// Expected: { "type": "h1", "props": { "children": ["Hello, Alice!"] } }
 
 const vnode2 = createElement('div', null,
   createElement(Button, { onClick: () => console.log('Clicked!'), text: 'Click Me' }),
   createElement(Greeting, { name: 'Bob' })
 );
 console.log('VNode with nested Functional Components:', JSON.stringify(vnode2, null, 2));
-// Expected: {
-//   "type": "div",
-//   "props": {
-//     "children": [
-//       { "type": "button", "props": { "onClick": "function", "children": ["Click Me"] } },
-//       { "type": "h1", "props": { "children": ["Hello, Bob!"] } }
-//     ]
-//   }
-// }
 `,
                 "tags": ["Virtual DOM", "Frontend", "React", "Component"]
             },
@@ -4053,22 +3965,11 @@ console.log('VNode with nested Functional Components:', JSON.stringify(vnode2, n
                 "link": "https://bigfrontend.dev/problem/Virtual-DOM-III-JSX-1",
                 "boilerplate": `// This problem is about implementing the Babel transform,
 // not directly runnable in a browser without a transpiler.
-// The solution would involve parsing JSX string into createElement calls.
 
-// Conceptual implementation of a JSX transform function
-// This is NOT a runnable function, but demonstrates the concept.
 function jsxTransform(jsxString) {
-  // This is where you'd parse the JSX string
-  // and convert it into createElement calls.
-  // For example:
-  // if (jsxString === '<div>Hello</div>') {
-  //   return "createElement('div', null, 'Hello')";
-  // }
-  // ... more complex parsing logic
   return "/* Implement a JSX parsing and transformation logic here */";
 }
 
-// Assuming createElement from previous problem is available
 function createElement(type, props, ...children) {
   if (typeof type === 'function') {
     return type({ ...props, children });
@@ -4082,7 +3983,6 @@ function createElement(type, props, ...children) {
   };
 }
 
-// Example of what the output of a JSX transform would look like:
 const jsxExample = \`
   <div id="app">
     <p className="text">Hello</p>
@@ -4091,14 +3991,11 @@ const jsxExample = \`
 
 console.log('Conceptual JSX Transform Output:');
 console.log(
-  '// This would be the result of a Babel-like JSX transform:\n',
-  'createElement("div", { id: "app" },\n',
-  '  createElement("p", { className: "text" }, "Hello")\n',
+  '// This would be the result of a Babel-like JSX transform:\\n',
+  'createElement("div", { id: "app" },\\n',
+  '  createElement("p", { className: "text" }, "Hello")\\n',
   ');'
 );
-
-// To actually run this, you'd need a transpiler like Babel.
-// For the purpose of this problem, the focus is on the *logic* of transformation.
 `,
                 "tags": ["Virtual DOM", "Frontend", "JSX", "Babel"]
             },
@@ -4117,19 +4014,10 @@ console.log(
                 "boilerplate": `// This problem builds on Virtual DOM III.
 // It's about extending the JSX transform to handle more complex scenarios.
 
-// Conceptual implementation of a JSX transform function
-// This is NOT a runnable function, but demonstrates the concept.
 function jsxTransformAdvanced(jsxString) {
-  // This is where you'd parse the JSX string
-  // and convert it into createElement calls, handling:
-  // - Attributes (props)
-  // - Nested elements
-  // - Text nodes
-  // - Expressions within {} (more advanced)
   return "/* Implement a more advanced JSX parsing and transformation logic here */";
 }
 
-// Assuming createElement from previous problem is available
 function createElement(type, props, ...children) {
   if (typeof type === 'function') {
     return type({ ...props, children });
@@ -4143,7 +4031,6 @@ function createElement(type, props, ...children) {
   };
 }
 
-// Example of what the output of an advanced JSX transform would look like:
 const jsxExampleAdvanced = \`
   <div id="root" data-value={123}>
     <Header title="My App" />
@@ -4156,17 +4043,15 @@ const jsxExampleAdvanced = \`
 
 console.log('Conceptual Advanced JSX Transform Output:');
 console.log(
-  '// This would be the result of a Babel-like JSX transform for complex JSX:\n',
-  'createElement("div", { id: "root", "data-value": 123 },\n',
-  '  createElement(Header, { title: "My App" }),\n',
-  '  createElement("section", null,\n',
-  '    createElement("p", null, "Count: ", count),\n',
-  '    createElement("button", { onClick: () => setCount(count + 1) }, "Increment")\n',
+  '// This would be the result of a Babel-like JSX transform for complex JSX:\\n',
+  'createElement("div", { id: "root", "data-value": 123 },\\n',
+  '  createElement(Header, { title: "My App" }),\\n',
+  '  createElement("section", null,\\n',
+  '    createElement("p", null, "Count: ", count),\\n',
+  '    createElement("button", { onClick: () => setCount(count + 1) }, "Increment")\\n',
   '  )\n',
   ');'
 );
-
-// Again, for actual execution, a transpiler is needed.
 `,
                 "tags": ["Virtual DOM", "Frontend", "JSX", "Babel"]
             },
@@ -4204,8 +4089,8 @@ const originalData = {
   e: new Map([['key1', 'value1'], ['key2', 123]]),
   f: new Set([1, 2, 'three']),
   g: null,
-  h: undefined, // Will be lost by JSON.stringify unless handled explicitly
-  i: function() { console.log('function'); } // Will be lost by JSON.stringify
+  h: undefined,
+  i: function() { console.log('function'); }
 };
 
 console.log('Original Data:', originalData);
@@ -4216,7 +4101,6 @@ console.log('Serialized Data:', serialized);
 const deserialized = customDeserialize(serialized);
 console.log('Deserialized Data:', deserialized);
 
-// Verify types and values after deserialization
 console.log('Deserialized.c is Date?', deserialized.c instanceof Date);
 console.log('Deserialized.d is RegExp?', deserialized.d instanceof RegExp);
 console.log('Deserialized.e is Map?', deserialized.e instanceof Map);
@@ -4246,11 +4130,11 @@ console.log('Deserialized.f is Set?', deserialized.f instanceof Set);
 }
 
 // Example usage:
-console.log(mostFrequentChar('banana'));       // Expected: "a"
-console.log(mostFrequentChar('aabbc'));        // Expected: "a" (or "b" depending on implementation)
-console.log(mostFrequentChar('Mississippi')); // Expected: "i"
-console.log(mostFrequentChar(''));             // Expected: "" or null
-console.log(mostFrequentChar('abcde'));        // Expected: "a" (first character)
+console.log(mostFrequentChar('banana'));
+console.log(mostFrequentChar('aabbc'));
+console.log(mostFrequentChar('Mississippi'));
+console.log(mostFrequentChar(''));
+console.log(mostFrequentChar('abcde'));
 `,
                 "tags": ["String", "Algorithm", "Hash Map"]
             },
@@ -4271,10 +4155,10 @@ console.log(mostFrequentChar('abcde'));        // Expected: "a" (first character
 }
 
 // Example usage:
-console.log(canWinStoneGame([5, 3, 4, 5])); // Expected: true
-console.log(canWinStoneGame([3, 7, 2, 3])); // Expected: true
-console.log(canWinStoneGame([1, 2, 3, 4, 5, 6])); // Expected: true
-console.log(canWinStoneGame([1, 100, 3])); // Expected: false (if optimal play leads to loss)
+console.log(canWinStoneGame([5, 3, 4, 5]));
+console.log(canWinStoneGame([3, 7, 2, 3]));
+console.log(canWinStoneGame([1, 2, 3, 4, 5, 6]));
+console.log(canWinStoneGame([1, 100, 3]));
 `,
                 "tags": ["Algorithm", "Game Theory", "Dynamic Programming"]
             },
@@ -4301,18 +4185,18 @@ console.log(canWinStoneGame([1, 100, 3])); // Expected: false (if optimal play l
 
 // Example usage:
 const counter1 = createCounter(5);
-console.log('Initial value:', counter1.get()); // Expected: 5
+console.log('Initial value:', counter1.get());
 counter1.increment();
-console.log('After increment:', counter1.get()); // Expected: 6
+console.log('After increment:', counter1.get());
 counter1.decrement();
-console.log('After decrement:', counter1.get()); // Expected: 5
+console.log('After decrement:', counter1.get());
 counter1.reset();
-console.log('After reset:', counter1.get()); // Expected: 5
+console.log('After reset:', counter1.get());
 
 const counter2 = createCounter(0);
 counter2.increment();
 counter2.increment();
-console.log('Counter 2 after increments:', counter2.get()); // Expected: 2
+console.log('Counter 2 after increments:', counter2.get());
 `,
                 "tags": ["Object", "Design Pattern", "JavaScript"]
             }
@@ -4320,15 +4204,125 @@ console.log('Counter 2 after increments:', counter2.get()); // Expected: 2
 
         const questionsContainer = document.getElementById('questions-container');
         const filterControlsContainer = document.getElementById('filter-controls');
-        let codeMirrorEditor; // To hold the CodeMirror instance
+        const userIdDisplay = document.getElementById('user-id');
+        const progressSummaryDiv = document.getElementById('progress-summary');
+        const totalQuestionsSpan = document.getElementById('total-questions');
+        const attemptedQuestionsSpan = document.getElementById('attempted-questions');
+        const remainingQuestionsSpan = document.getElementById('remaining-questions');
+        const viewProgressBtn = document.getElementById('view-progress-btn');
+
+
+        let codeMirrorEditor;
         const QUESTIONS_PER_PAGE = 10;
         let currentPage = 1;
-        let activeTags = []; // Array to store currently active filter tags
+        let activeTags = [];
+        let currentView = 'list'; // 'list' or 'progressReport'
+
+        // Firebase Initialization and Auth
+        async function initializeFirebase() {
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+
+            if (Object.keys(firebaseConfig).length === 0) {
+                console.error("Firebase config not found. Progress tracking will not work.");
+                userIdDisplay.textContent = "N/A (Firebase not configured)";
+                // Proceed without Firebase if config is missing
+                window.onload = () => displayQuestionsList(1);
+                return;
+            }
+
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                } else {
+                    // Sign in anonymously if no user is logged in
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined') {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                        userId = auth.currentUser.uid;
+                    } catch (error) {
+                        console.error("Firebase anonymous sign-in failed:", error);
+                        userId = crypto.randomUUID(); // Fallback to a random ID if auth fails
+                    }
+                }
+                userIdDisplay.textContent = userId;
+                await loadAllUserProgress(); // Load progress after auth is ready
+                displayQuestionsList(1); // Display questions after progress is loaded
+            });
+        }
+
+        // Load all user progress from Firestore
+        async function loadAllUserProgress() {
+            if (!db || !userId) {
+                console.warn("Firestore not initialized or userId not available. Cannot load progress.");
+                return;
+            }
+            try {
+                const progressCollectionRef = collection(db, `artifacts/${__app_id}/users/${userId}/progress`);
+                const q = query(progressCollectionRef);
+                const querySnapshot = await getDocs(q);
+                userProgress = {}; // Clear previous cache
+                querySnapshot.forEach((doc) => {
+                    userProgress[doc.id] = doc.data();
+                });
+                console.log("User progress loaded:", userProgress);
+                updateProgressSummary(); // Update summary after loading
+            } catch (e) {
+                console.error("Error loading user progress: ", e);
+            }
+        }
+
+        // Save user progress to Firestore
+        async function saveProgress(questionId, code, output) {
+            if (!db || !userId) {
+                console.warn("Firestore not initialized or userId not available. Cannot save progress.");
+                return;
+            }
+            try {
+                const progressDocRef = doc(db, `artifacts/${__app_id}/users/${userId}/progress/${questionId}`);
+                await setDoc(progressDocRef, {
+                    code: code,
+                    output: output,
+                    lastUpdated: new Date().toISOString(),
+                    attempted: true
+                });
+                userProgress[questionId] = { code, output, lastUpdated: new Date().toISOString(), attempted: true };
+                console.log(`Progress saved for question ${questionId}`);
+                updateProgressSummary(); // Update summary after saving
+                // Re-render the list to update the "Attempted" badge if on list view
+                if (currentView === 'list') {
+                    displayQuestionsList(currentPage);
+                }
+            } catch (e) {
+                console.error("Error saving progress: ", e);
+            }
+        }
+
+        // Update progress summary display
+        function updateProgressSummary() {
+            const attemptedCount = Object.keys(userProgress).length;
+            const totalCount = questionsData.length;
+            const remainingCount = totalCount - attemptedCount;
+
+            totalQuestionsSpan.textContent = totalCount;
+            attemptedQuestionsSpan.textContent = attemptedCount;
+            remainingQuestionsSpan.textContent = remainingCount;
+        }
 
         // Function to display the list of questions
         function displayQuestionsList(page = 1) {
+            currentView = 'list';
             currentPage = page;
             questionsContainer.innerHTML = ''; // Clear current content
+            filterControlsContainer.style.display = 'flex'; // Show filter controls
+            progressSummaryDiv.style.display = 'block'; // Show progress summary
 
             let filteredQuestions = questionsData;
 
@@ -4351,8 +4345,16 @@ console.log('Counter 2 after increments:', counter2.get()); // Expected: 2
 
             questionsToDisplay.forEach(question => {
                 const questionCard = document.createElement('div');
-                questionCard.className = 'bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 cursor-pointer';
+                questionCard.className = 'bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 cursor-pointer relative'; // Added relative for badge positioning
                 questionCard.onclick = () => displayProblemDetails(question.id); // Click to view details
+
+                // Attempted Badge
+                if (userProgress[question.id] && userProgress[question.id].attempted) {
+                    const attemptedBadge = document.createElement('span');
+                    attemptedBadge.className = 'absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full';
+                    attemptedBadge.textContent = 'Attempted';
+                    questionCard.appendChild(attemptedBadge);
+                }
 
                 // Question Name
                 const nameElement = document.createElement('h2');
@@ -4483,9 +4485,12 @@ console.log('Counter 2 after increments:', counter2.get()); // Expected: 2
             questionsContainer.appendChild(paginationDiv);
         }
 
-
         // Function to display details of a single problem
-        function displayProblemDetails(questionId) {
+        async function displayProblemDetails(questionId) {
+            currentView = 'problemDetail';
+            filterControlsContainer.style.display = 'none'; // Hide filter controls
+            progressSummaryDiv.style.display = 'none'; // Hide progress summary
+
             const question = questionsData.find(q => q.id === questionId);
 
             if (!question) {
@@ -4552,14 +4557,24 @@ console.log('Counter 2 after increments:', counter2.get()); // Expected: 2
                 indentWithTabs: false
             });
 
-            // Set boilerplate code for the current problem
-            codeMirrorEditor.setValue(question.boilerplate || '// Write your JavaScript code here\nconsole.log("Hello, World!");');
+            // Load saved code if available
+            if (userProgress[question.id]) {
+                codeMirrorEditor.setValue(userProgress[question.id].code);
+                document.getElementById('code-output').textContent = userProgress[question.id].output;
+            } else {
+                codeMirrorEditor.setValue(question.boilerplate || '// Write your JavaScript code here\nconsole.log("Hello, World!");');
+            }
+
 
             // Add event listener to the back button
             document.getElementById('backToListBtn').addEventListener('click', () => displayQuestionsList(currentPage));
 
             // Add event listener to the run code button
-            document.getElementById('run-code-btn').addEventListener('click', () => runCode(codeMirrorEditor.getValue()));
+            document.getElementById('run-code-btn').addEventListener('click', async () => {
+                const currentCode = codeMirrorEditor.getValue();
+                const output = runCode(currentCode); // Run and get output
+                await saveProgress(question.id, currentCode, output); // Save progress
+            });
         }
 
         // Function to run the user's code and display output
@@ -4590,7 +4605,6 @@ console.log('Counter 2 after increments:', counter2.get()); // Expected: 2
 
             try {
                 // Execute the code in a sandboxed environment
-                // Using new Function is safer than direct eval()
                 new Function(code)();
             } catch (error) {
                 logs.push(`RUNTIME ERROR: ${error.message}\n${error.stack}`);
@@ -4600,16 +4614,67 @@ console.log('Counter 2 after increments:', counter2.get()); // Expected: 2
                 console.error = originalConsoleError;
 
                 // Display captured logs
-                if (logs.length > 0) {
-                    outputElement.textContent = logs.join('\n');
-                } else {
-                    outputElement.textContent = 'Code executed. No console output.';
-                }
+                const finalOutput = logs.length > 0 ? logs.join('\n') : 'Code executed. No console output.';
+                outputElement.textContent = finalOutput;
+                return finalOutput; // Return output for saving
             }
         }
 
-        // Initial load: display the first page of questions
-        window.onload = () => displayQuestionsList(1);
+        // Function to display the progress report page
+        function displayProgressReport() {
+            currentView = 'progressReport';
+            questionsContainer.innerHTML = ''; // Clear current content
+            filterControlsContainer.style.display = 'none'; // Hide filter controls
+            progressSummaryDiv.style.display = 'none'; // Hide progress summary
+
+            const attemptedQuestions = questionsData.filter(q => userProgress[q.id] && userProgress[q.id].attempted);
+
+            let progressHtml = `
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <button id="backToMainListBtn" class="mb-4 px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors duration-200">
+                        &larr; Back to Questions List
+                    </button>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 text-center">Your Progress Report</h2>
+            `;
+
+            if (attemptedQuestions.length === 0) {
+                progressHtml += `<p class="text-center text-gray-500">You haven't attempted any questions yet. Start coding!</p>`;
+            } else {
+                progressHtml += `<div class="space-y-6">`;
+                attemptedQuestions.forEach(question => {
+                    const progress = userProgress[question.id];
+                    progressHtml += `
+                        <div class="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200">
+                            <h3 class="text-xl font-semibold text-gray-700 mb-2">
+                                ${question.id}. <a href="#" onclick="event.preventDefault(); displayProblemDetails(${question.id});" class="text-blue-600 hover:underline">${question.name}</a>
+                            </h3>
+                            <p class="text-gray-600 text-sm mb-2">Last Updated: ${new Date(progress.lastUpdated).toLocaleString()}</p>
+
+                            <div class="mb-2">
+                                <p class="font-medium text-gray-700">Last Saved Code:</p>
+                                <pre class="bg-gray-200 p-2 rounded-md text-xs font-mono text-gray-800 overflow-x-auto h-24">${progress.code || '// No code saved'}</pre>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-700">Last Output:</p>
+                                <pre class="bg-gray-200 p-2 rounded-md text-xs font-mono text-gray-800 overflow-x-auto h-24">${progress.output || '// No output'}</pre>
+                            </div>
+                        </div>
+                    `;
+                });
+                progressHtml += `</div>`;
+            }
+
+            progressHtml += `</div>`;
+            questionsContainer.innerHTML = progressHtml;
+
+            document.getElementById('backToMainListBtn').addEventListener('click', () => displayQuestionsList(1));
+        }
+
+        // Event listener for the "View Progress" button
+        viewProgressBtn.addEventListener('click', displayProgressReport);
+
+        // Initial Firebase and then display questions
+        initializeFirebase();
     </script>
 </body>
 </html>
